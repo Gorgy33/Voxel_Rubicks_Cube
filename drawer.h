@@ -30,7 +30,8 @@ private:
     Scene scene;
     QOpenGLShaderProgram *program;
     QOpenGLBuffer bufferForVertices;
-    QOpenGLBuffer bufferForIndices;
+    QOpenGLBuffer bufferForNormals;
+
     QOpenGLVertexArrayObject vao;
 
     Camera camera;
@@ -44,7 +45,7 @@ private:
     GLuint u_color;
 
     float cameraSpeed       = 1.0f;
-    float rotatingSpeed     = 100.0f;
+    float rotatingSpeed     = 5.0f;
 
     bool pressed;
     QPoint ptrMousePosition;
@@ -54,6 +55,7 @@ protected:
     void mousePressEvent(QMouseEvent* pe);
     void mouseMoveEvent(QMouseEvent* pe);
     void mouseReleaseEvent(QMouseEvent*);
+    void wheelEvent(QWheelEvent* pe);
 protected slots:
     void update();
 };

@@ -20,13 +20,12 @@ public:
 
     VoxelParam getElem(int i, int j, int k);
 private:
-    vector< vector < vector < VoxelParam > > > matrix;
-    float sideLength;
-    bool ready = false;
-
     int sizeX;
     int sizeY;
     int sizeZ;
+    vector< vector < vector < VoxelParam > > > matrix;
+    float sideLength;
+    bool ready = false;
 };
 
 #endif // SCENE_H

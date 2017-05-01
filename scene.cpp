@@ -31,6 +31,8 @@ Scene::Scene(float length, int size)
                 color = QVector3D(r, g, b);
 
                 matrix[i][j][k].setColor(color);
+                if((i == 0) && (j == 0) && (k == 0))
+                    matrix[i][j][k].setExists(false);
             }
 }
 

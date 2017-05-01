@@ -11,6 +11,15 @@ int indices[36] =
     2, 3, 6, 3, 6, 7  // back
 };
 
+QVector3D mix(QVector3D a, QVector3D b, float value)
+{
+    return (1.0f - value) * a + value * b;
+}
+
+QVector3D mix(QVector3D a, QVector3D b, QVector3D c)
+{
+    return (a + b + c) / 3.0;
+}
 
 Drawer::~Drawer()
 {
@@ -56,8 +65,17 @@ void Drawer::initializeGL()
     program->enableAttributeArray(0);
     program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
 
+    bufferForNormals = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+    bufferForNormals.create();
+    bufferForNormals.bind();
+    bufferForNormals.setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+    program->enableAttributeArray(1);
+    program->setAttributeBuffer(1, GL_FLOAT, 0, 3, 0);
+
     vao.release();
     bufferForVertices.release();
+    bufferForNormals.release();
     program->release();
 }
 
@@ -88,24 +106,50 @@ void Drawer::paintGL()
                     {
                         float length = scene.getLength();
                         QVector3D vertices[8];
-                        vertices[0] = (QVector3D(i * length, j * length, k * length));
-                        vertices[1] = (QVector3D((i + 1) * length, j * length, k * length));
-                        vertices[2] = (QVector3D(i * length, (j + 1) * length, k * length));
-                        vertices[3] = (QVector3D((i + 1) * length, (j + 1) * length, k * length));
-                        vertices[4] = (QVector3D(i * length, j * length, (k + 1) * length));
-                        vertices[5] = (QVector3D((i + 1) * length, j * length, (k + 1) * length));
-                        vertices[6] = (QVector3D(i * length, (j + 1) * length, (k + 1) * length));
-                        vertices[7] = (QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length));
+
+                        vertices[0] = QVector3D(i * length, j * length, k * length);
+                        vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
+                        vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
+                        vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
+                        vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
+                        vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
+                        vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
+                        vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
+
+                        QVector3D base[8];
+
+                        base[0] = QVector3D(-1.0f, -1.0f, 1.0f);
+                        base[1] = QVector3D(1.0f, -1.0f, 1.0f);
+                        base[2] = QVector3D(-1.0f, -1.0f, -1.0f);
+                        base[3] = QVector3D(1.0f, -1.0f, -1.0f);
+                        base[4] = QVector3D(-1.0f, 1.0f, 1.0f);
+                        base[5] = QVector3D(1.0f, 1.0f, 1.0f);
+                        base[6] = QVector3D(-1.0f, 1.0f, -1.0f);
+                        base[7] = QVector3D(1.0f, 1.0f, -1.0f);
+
+                        QVector3D normal[8];
+                        for(int kk = 0; kk < 2; kk++)
+                            for(int jj = 0; jj < 2; jj++)
+                                for(int ii = 0; ii < 2; ii++)
+                                {
+                                    QVector3D x = mix(base[0], base[1], (float)(i + ii)  / (float)scene.getXsize());
+                                    QVector3D y = mix(base[0], base[4], (float)(j + jj) / (float)scene.getYsize());
+                                    QVector3D z = mix(base[0], base[2], (float)(k + kk) / (float)scene.getZsize());
+                                    normal[ii + jj * 2 + kk * 4] = mix(x, y, z);
+                                }
 
                         program->bind();
                         program->setUniformValue(u_color, voxel.getColor());
                         bufferForVertices.bind();
                         bufferForVertices.allocate(vertices, sizeof(vertices));
+                        bufferForNormals.bind();
+                        bufferForNormals.allocate(normal, sizeof(normal));
 
                         vao.bind();
                         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
                         vao.release();
                         bufferForVertices.release();
+                        bufferForNormals.release();
                         program->release();
                     }
                 }
@@ -115,19 +159,7 @@ void Drawer::paintGL()
 
 void Drawer::keyPressEvent(QKeyEvent *event)
 {
-    if(event->key() == Qt::Key_W)
-        camera.translateBy(cameraSpeed, camera.forward());
-    if(event->key() == Qt::Key_S)
-        camera.translateBy(-cameraSpeed, camera.forward());
-    if(event->key() == Qt::Key_A)
-        camera.translateBy(-cameraSpeed, camera.right());
-    if(event->key() == Qt::Key_D)
-        camera.translateBy(cameraSpeed, camera.right());
-    if(event->key() == Qt::Key_Q)
-        camera.translateBy(-cameraSpeed, camera.up());
-    if(event->key() == Qt::Key_E)
-        camera.translateBy(cameraSpeed, camera.up());
-
+    Q_UNUSED(event);
     program->bind();
     program->setUniformValue(u_worldToCamera, camera.toMatrix());
     program->release();
@@ -146,12 +178,8 @@ void Drawer::mouseMoveEvent(QMouseEvent *pe)
 {
     if(pressed)
     {
-        camera.setRotation(
-                    rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width(),
-                    QVector3D(0.0f, 1.0f, 0.0f));
-        camera.setRotation(
-                    rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height(),
-                    camera.right());
+        camera.rotateX(rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width());
+        camera.rotateY(rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height());
         ptrMousePosition = pe->pos();
 
         program->bind();
@@ -164,6 +192,17 @@ void Drawer::mouseMoveEvent(QMouseEvent *pe)
 
 void Drawer::mouseReleaseEvent(QMouseEvent*){
     pressed = false;
+    QWidget::update();
+}
+
+void Drawer::wheelEvent(QWheelEvent *pe)
+{
+    if(pe->delta() < 0.0f)
+        camera.zoomIn();
+    else camera.zoomOut();
+    program->bind();
+    program->setUniformValue(u_worldToCamera, camera.toMatrix());
+    program->release();
     QWidget::update();
 }
 

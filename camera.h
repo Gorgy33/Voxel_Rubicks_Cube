@@ -7,23 +7,20 @@ class Camera
 {
 public:
     Camera();
-    void setRotation(float xRot, const QVector3D axis);
-    void translateBy(float speed, const QVector3D axis);
-
-    QVector3D forward() const;
-    QVector3D up() const;
-    QVector3D right() const;
+    void rotateX(float angle);
+    void rotateY(float angle);
+    void zoomIn();
+    void zoomOut();
 
     QMatrix4x4 toMatrix();
 
 private:
     bool dirty;
-    QVector3D translation;
-    QQuaternion rotation;
+    float xAngle;
+    float yAngle;
+    float radius;
 
-    const static QVector3D LOCAL_FORWARD;
-    const static QVector3D LOCAL_UP;
-    const static QVector3D LOCAL_RIGHT;
+    QVector3D position;
 
     QMatrix4x4 world;
 };

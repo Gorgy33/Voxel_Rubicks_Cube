@@ -13,6 +13,7 @@ public:
     QVector3D getColor()  { return color; }
     bool isExists()       { return exists; }
     void setColor(QVector3D color) { this->color = color; }
+    void setExists(bool exists)    { this->exists = exists; }
 private:
     QVector3D color;
     bool exists;
