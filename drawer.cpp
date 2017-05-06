@@ -118,14 +118,12 @@ void Drawer::paintGL()
 
                         QVector3D base[8];
 
-                        base[0] = QVector3D(-1.0f, -1.0f, 1.0f);
-                        base[1] = QVector3D(1.0f, -1.0f, 1.0f);
-                        base[2] = QVector3D(-1.0f, -1.0f, -1.0f);
-                        base[3] = QVector3D(1.0f, -1.0f, -1.0f);
-                        base[4] = QVector3D(-1.0f, 1.0f, 1.0f);
-                        base[5] = QVector3D(1.0f, 1.0f, 1.0f);
-                        base[6] = QVector3D(-1.0f, 1.0f, -1.0f);
-                        base[7] = QVector3D(1.0f, 1.0f, -1.0f);
+                        base[0] = QVector3D(-1.0f, 0.0f, 0.0f);
+                        base[1] = QVector3D(1.0f, 0.0f, 0.0f);
+                        base[2] = QVector3D(0.0f, -1.0f, 0.0f);
+                        base[3] = QVector3D(0.0f, 1.0f, 0.0f);
+                        base[4] = QVector3D(0.0f, 0.0f, -1.0f);
+                        base[5] = QVector3D(0.0f, 0.0f, 1.0f);
 
                         QVector3D normal[8];
                         for(int kk = 0; kk < 2; kk++)
@@ -133,8 +131,8 @@ void Drawer::paintGL()
                                 for(int ii = 0; ii < 2; ii++)
                                 {
                                     QVector3D x = mix(base[0], base[1], (float)(i + ii)  / (float)scene.getXsize());
-                                    QVector3D y = mix(base[0], base[4], (float)(j + jj) / (float)scene.getYsize());
-                                    QVector3D z = mix(base[0], base[2], (float)(k + kk) / (float)scene.getZsize());
+                                    QVector3D y = mix(base[2], base[3], (float)(j + jj) / (float)scene.getYsize());
+                                    QVector3D z = mix(base[4], base[5], (float)(k + kk) / (float)scene.getZsize());
                                     normal[ii + jj * 2 + kk * 4] = mix(x, y, z);
                                 }
 
