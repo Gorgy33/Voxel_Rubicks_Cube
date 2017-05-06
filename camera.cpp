@@ -3,8 +3,8 @@
 Camera::Camera()
 {
     dirty = true;
-    xAngle = M_PI / 4.0;
-    yAngle = M_PI / 6.0;
+    xAngle = 3.14f / 4.0f;
+    yAngle = 3.14f / 6.0f;
     radius = 6.0f;
 }
 
@@ -17,7 +17,7 @@ void Camera::rotateX(float angle)
 void Camera::rotateY(float angle)
 {
     dirty = true;
-    if(fabs(yAngle + angle) < M_PI / 2.0)
+    if(fabs(yAngle + angle) < 3.14f / 2.0f)
         yAngle += angle;
 }
 
