@@ -21,19 +21,27 @@ Scene::Scene(float length, int size)
         for(int j = 0; j < size; ++j)
             for(int k = 0; k < size; ++k)
             {
-                // Я либо даун, либо даун я. Эта часть должна убирать по идее все внутренние воксели, которые не видит пользователь
-                if((i != 0) || (i != (size -1)) || (j != 0) ||  (j != (size -1)) || (k != 0) ||  (k != (size -1)))
+                // По уродски мб но я ж даун
+                if((i == 0) || (i == (size -1)) || (j == 0) ||  (j == (size -1)) || (k == 0) ||  (k == (size -1)))
+                    matrix[i][j][k].setExists(true);
+                else
                     matrix[i][j][k].setExists(false);
-                QVector3D color;
-                r = rand()%256;
-                r = r/255;
-                g = rand()%256;
-                g = g/255;
-                b = rand()%256;
-                b = b/255;
-                color = QVector3D(r, g, b);
+                // Это убирает внешний центральный воксель
+//                if((i == 1) && (j == 1) && (k == 0))
+//                    matrix[i][j][k].setExists(false);
+                if(matrix[i][j][k].isExists())
+                {
+                    QVector3D color;
+                    r = rand()%256;
+                    r = r/255;
+                    g = rand()%256;
+                    g = g/255;
+                    b = rand()%256;
+                    b = b/255;
+                    color = QVector3D(r, g, b);
 
-                matrix[i][j][k].setColor(color);
+                    matrix[i][j][k].setColor(color);
+                }
 
             }
 }
