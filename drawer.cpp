@@ -1,6 +1,7 @@
 #include "drawer.h"
 #include <QMouseEvent>
 
+
 int indices[36] =
 {
     0, 1, 4, 1, 4, 5, // front
@@ -29,7 +30,49 @@ Drawer::~Drawer()
 Drawer::Drawer(QWidget *parent) :
     QOpenGLWidget(parent)
 {
-    scene = Scene(1.0f, 3);
+    int LengthX, LengthY, LengthZ, Step;
+    //Need to implement input from file
+    LengthX=3;
+    LengthY=3;
+    LengthZ=3;
+    Step=1;
+
+    QLCDNumber *lcdX = new QLCDNumber(2);
+    lcdX->setSegmentStyle(QLCDNumber::Filled);
+//    lcdX->setGeometry(200, 200, 200, 200);
+
+
+    QSlider *sliderX = new QSlider(Qt::Horizontal);
+    sliderX->setRange(0, LengthX);
+    sliderX->setValue(LengthX);
+
+
+
+    connect(sliderX, SIGNAL(valueChanged(int)),
+                lcdX, SLOT(display(int)));
+    connect(sliderX, SIGNAL(valueChanged(int)),
+                this, SIGNAL(valueChanged(int)));
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(lcdX);
+    layout->addWidget(sliderX);
+    setLayout(layout);
+
+
+
+
+
+
+
+
+
+    float lenght = (float)Step;
+    int NodeSizeX, NodeSizeY, NodeSizeZ;
+    NodeSizeX = LengthX/Step;
+    NodeSizeY = LengthY/Step;
+    NodeSizeZ = LengthZ/Step;
+    scene = Scene(lenght, NodeSizeX, NodeSizeY, NodeSizeZ);
+//    scene = Scene(1, 3, 3, 3);
 }
 
 
@@ -82,7 +125,7 @@ void Drawer::initializeGL()
 void Drawer::resizeGL(int width, int height)
 {
     cameraToView.setToIdentity();
-    cameraToView.perspective(45.0f, width / float(height), 0.0f, 1000.0f);
+    cameraToView.perspective(45.0f, width / float(height), 0.0f, 10000000000000.0f);
     program->bind();
     program->setUniformValue(u_cameraToView, cameraToView);
     program->release();
@@ -116,7 +159,7 @@ void Drawer::paintGL()
                         vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
                         vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
 
-                        QVector3D base[8];
+                        QVector3D base[6];
 
                         base[0] = QVector3D(-1.0f, 0.0f, 0.0f);
                         base[1] = QVector3D(1.0f, 0.0f, 0.0f);

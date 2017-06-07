@@ -6,8 +6,9 @@
 
 QT       += core gui opengl
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+CONFIG   += c++15
 TARGET = Voxel_Rubicks_Cube
 TEMPLATE = app
 

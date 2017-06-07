@@ -14,7 +14,7 @@ void main()
     if (diffuseLighting < 0)
         diffuseLighting = 0;
     gl_FragColor = vec4(color, 1.0) * (
-                0.3f + diffuseLighting * 0.7f);
+                0.3f + diffuseLighting * 0.8f);
     gl_FragDepth = fragIn.depth;
 //    vec3 depth = vec3(fragIn.depth);
 //    gl_FragColor = vec4(depth, 1.0);

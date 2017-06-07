@@ -8,10 +8,15 @@
 #include <QOpenGLVertexArrayObject>
 #include <QMatrix4x4>
 #include <QQuaternion>
+#include <QLCDNumber>
+#include <QSlider>
+#include <QLayout>
 
 #include "scene.h"
 #include "voxelparameter.h"
 #include "camera.h"
+
+
 
 class QOpenGLShaderProgram;
 

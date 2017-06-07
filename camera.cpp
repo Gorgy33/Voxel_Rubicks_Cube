@@ -5,7 +5,7 @@ Camera::Camera()
     dirty = true;
     xAngle = 3.14f / 4.0f;
     yAngle = 3.14f / 6.0f;
-    radius = 6.0f;
+    radius = 12.0f;
 }
 
 void Camera::rotateX(float angle)
@@ -24,7 +24,7 @@ void Camera::rotateY(float angle)
 void Camera::zoomIn()
 {
     dirty = true;
-    if(radius < 10.0f)
+    if(radius < 200.0f)
         radius *= 1.1f;
 }
 
@@ -39,11 +39,12 @@ QMatrix4x4 Camera::toMatrix()
 {
     if(dirty)
     {
+
         world.setToIdentity();
         position = QVector3D(radius * sin(xAngle) * cos(yAngle) + 1.5f,
                              radius * sin(yAngle) + 1.5f,
                              radius * (cos(xAngle) * cos(yAngle)) + 1.5f);
-        world.lookAt(position, QVector3D(1.5f, 1.5f, 1.5f), QVector3D(0.0f, 1.0f, 0.0f));
+        world.lookAt(position, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(0.0f, 1.0f, 0.0f));
         dirty = false;
     }
     return world;

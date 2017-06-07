@@ -8,7 +8,7 @@ using namespace std;
 class Scene
 {
 public:
-    Scene(float length, int size);
+    Scene(float length, int NodeSizeX, int NodeSizeY, int NodeSizeZ);
     Scene();
     bool isReady()      { return ready; }
 
