@@ -12,6 +12,44 @@ int indices[36] =
     2, 3, 6, 3, 6, 7  // back
 };
 
+int lineIndices[24] =
+{
+    0, 1 , 0, 2, 0, 4,
+    1, 3, 1, 5,
+    2, 3, 2, 6,
+    3, 7,
+    4, 5, 4, 6,
+    5, 7,
+    6, 7
+};
+
+int layernumber (int i, int j, int k, int Nodesize, int a, int b, int layer)
+{
+
+    if((i == a) || (i == (Nodesize -b)) || (j == a) ||  (j == (Nodesize -b)) || (k == a) ||  (k == (Nodesize -b)))
+    {
+        return layer;
+    }
+    else
+    {
+        a++;
+        b++;
+        layer++;
+        return layernumber(i,j,k,Nodesize,a,b, layer);
+    }
+}
+
+int sign(double x)
+{
+    if(x>0)
+        return 1;
+    else
+        if(x<0)
+            return -1;
+        else
+            return 0;
+}
+
 QVector3D mix(QVector3D a, QVector3D b, float value)
 {
     return (1.0f - value) * a + value * b;
@@ -22,57 +60,169 @@ QVector3D mix(QVector3D a, QVector3D b, QVector3D c)
     return (a + b + c) / 3.0;
 }
 
+
+
+void Drawer:: setCollor(int x,int y,int z)
+{
+    matrix.resize(x);
+    for(int i = 0; i < x; ++i)
+    {
+        matrix[i].resize(y);
+        for(int j = 0; j < y; j++)
+            matrix[i][j].resize(z);
+    }
+
+
+    sizeX = x;
+    sizeY = y;
+    sizeZ = z;
+
+    float r,g,b;
+
+    for(int i = 0; i < x; i++)
+        for(int j = 0; j < y; j++)
+            for(int k = 0; k < z; k++)
+            {
+                QVector3D color;
+                r = rand()%256;
+                r = r/255;
+                g = rand()%256;
+                g = g/255;
+                b = rand()%256;
+                b = b/255;
+
+                //    double value;
+                //    double red, blue, yellow, green, minblue, rad, rad0;
+                //    int layernum;
+                //    rad0=NodesizeX/2.0;
+                //    minblue = 0;
+                //    red = (sign(rad0-(length/2))*log(rad0-(length/2)))/(4*M_PI)  ;
+                //    blue = minblue + (red - minblue) / 4;
+                //    yellow = red - (red - minblue) / 4;
+                //    green = minblue + (red - minblue) / 2;
+
+
+
+                color = QVector3D(r, g, b);
+
+                matrix[i][j][k].setColor(color);
+            }
+
+}
+
+void Drawer:: setExist(int x, int y, int z)
+{
+        for(int i = 0; i < x; ++i)
+            for(int j = 0; j < y; ++j)
+                for(int k = 0; k < z; ++k)
+                {
+
+                    if((i == 0) || (i == (x -1)) || (j == 0) ||  (j == (y -1)) || (k == 0) ||  (k == (z -1)))
+                        matrix[i][j][k].setExists(true);
+                    else
+                        matrix[i][j][k].setExists(false);
+//                    if(i == 1 && j == 1 && k == 1)
+//                        matrix[i][j][k].setExists(true);
+//                    else
+//                        matrix[i][j][k].setExists(false);
+                }
+}
+
+
+
 Drawer::~Drawer()
 {
 
 }
 
+
+
 Drawer::Drawer(QWidget *parent) :
     QOpenGLWidget(parent)
 {
-    int LengthX, LengthY, LengthZ, Step;
+    double LengthX, LengthY, LengthZ, Step;
     //Need to implement input from file
-    LengthX=3;
-    LengthY=3;
-    LengthZ=3;
-    Step=1;
+    LengthX=30.0;
+    LengthY=30.0;
+    LengthZ=30.0;
+    Step=1.0;
 
-    QLCDNumber *lcdX = new QLCDNumber(2);
+
+    int NodeSizeX, NodeSizeY, NodeSizeZ;
+    NodeSizeX = LengthX/Step;
+    NodeSizeY = LengthY/Step;
+    NodeSizeZ = LengthZ/Step;
+
+
+    QLCDNumber *lcdX = new QLCDNumber(4, parent);
     lcdX->setSegmentStyle(QLCDNumber::Filled);
-//    lcdX->setGeometry(200, 200, 200, 200);
+    lcdX->setGeometry(930, 20, 50, 30);
+    lcdX->display(NodeSizeX);
+    QLCDNumber *lcdY = new QLCDNumber(4, parent);
+    lcdY->setSegmentStyle(QLCDNumber::Filled);
+    lcdY->setGeometry(930, 120, 50, 30);
+    lcdY->display(NodeSizeY);
+    QLCDNumber *lcdZ = new QLCDNumber(4, parent);
+    lcdZ->setSegmentStyle(QLCDNumber::Filled);
+    lcdZ->setGeometry(930, 220, 50, 30);
+    lcdZ->display(NodeSizeZ);
 
 
-    QSlider *sliderX = new QSlider(Qt::Horizontal);
-    sliderX->setRange(0, LengthX);
-    sliderX->setValue(LengthX);
+    QSlider *sliderX = new QSlider(Qt::Horizontal, parent);
+    sliderX->setRange(0, NodeSizeX);
+    sliderX->setValue(NodeSizeX);
+    sliderX->setGeometry(900, 60, 120, 20);
+    QSlider *sliderY = new QSlider(Qt::Horizontal, parent);
+    sliderY->setRange(0, NodeSizeY);
+    sliderY->setValue(NodeSizeY);
+    sliderY->setGeometry(900, 160, 120, 20);
+    QSlider *sliderZ = new QSlider(Qt::Horizontal, parent);
+    sliderZ->setRange(0, NodeSizeZ);
+    sliderZ->setValue(NodeSizeZ);
+    sliderZ->setGeometry(900, 260, 120, 20);
+
+    QCheckBox *GridLine = new QCheckBox(tr("Show grid line"),parent);
+    GridLine->setGeometry(900, 500, 120, 50);
+
+    QPushButton *Mole = new QPushButton(tr("Mole"), parent);
+    Mole->setGeometry(900, 350, 120, 50);
+
+    QCheckBox *LockCamera = new QCheckBox(tr("Lock Camera"),parent);
+    LockCamera->setGeometry(900, 450, 120, 50);
 
 
 
     connect(sliderX, SIGNAL(valueChanged(int)),
                 lcdX, SLOT(display(int)));
-    connect(sliderX, SIGNAL(valueChanged(int)),
-                this, SIGNAL(valueChanged(int)));
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(lcdX);
-    layout->addWidget(sliderX);
-    setLayout(layout);
+    connect(sliderY, SIGNAL(valueChanged(int)),
+                lcdY, SLOT(display(int)));
 
+    connect(sliderZ, SIGNAL(valueChanged(int)),
+                lcdZ, SLOT(display(int)));
 
 
 
 
 
+    connect(GridLine, SIGNAL(stateChanged(int)),
+                this, SLOT(paintGrid(int)));
+    connect(LockCamera, SIGNAL(stateChanged(int)),
+                this, SLOT(CameraCenter(int)));
 
 
+    connect(sliderX, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerX(int)));
+    connect(sliderY, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerY(int)));
+    connect(sliderZ, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerZ(int)));
 
-    float lenght = (float)Step;
-    int NodeSizeX, NodeSizeY, NodeSizeZ;
-    NodeSizeX = LengthX/Step;
-    NodeSizeY = LengthY/Step;
-    NodeSizeZ = LengthZ/Step;
-    scene = Scene(lenght, NodeSizeX, NodeSizeY, NodeSizeZ);
-//    scene = Scene(1, 3, 3, 3);
+
+    sideLength = Step;
+
+    setCollor(NodeSizeX, NodeSizeY, NodeSizeZ);
+    setExist(NodeSizeX, NodeSizeY, NodeSizeZ);
+
+    scene = Scene();
+
 }
 
 
@@ -134,20 +284,24 @@ void Drawer::resizeGL(int width, int height)
 
 void Drawer::paintGL()
 {
-    VoxelParam voxel;
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     if(scene.isReady())
     {
-        for(int i = 0; i < scene.getXsize(); i++)
-            for(int j = 0; j < scene.getYsize(); j++)
-                for(int k = 0; k < scene.getZsize(); k++)
+        QVector3D black = QVector3D (0.0f, 0.0f, 0.0f);
+
+        for(int i = 0; i < getXsize(); i++)
+            for(int j = 0; j < getYsize(); j++)
+                for(int k = 0; k < getZsize(); k++)
                 {
-                    voxel = scene.getElem(i, j, k);
-                    if(voxel.isExists())
+
+
+                    if(matrix[i][j][k].isExists())
                     {
-                        float length = scene.getLength();
+                        float length = getLength();
                         QVector3D vertices[8];
 
                         vertices[0] = QVector3D(i * length, j * length, k * length);
@@ -173,14 +327,14 @@ void Drawer::paintGL()
                             for(int jj = 0; jj < 2; jj++)
                                 for(int ii = 0; ii < 2; ii++)
                                 {
-                                    QVector3D x = mix(base[0], base[1], (float)(i + ii)  / (float)scene.getXsize());
-                                    QVector3D y = mix(base[2], base[3], (float)(j + jj) / (float)scene.getYsize());
-                                    QVector3D z = mix(base[4], base[5], (float)(k + kk) / (float)scene.getZsize());
+                                    QVector3D x = mix(base[0], base[1], (float)(i + ii)  / (float)getXsize());
+                                    QVector3D y = mix(base[2], base[3], (float)(j + jj) / (float)getYsize());
+                                    QVector3D z = mix(base[4], base[5], (float)(k + kk) / (float)getZsize());
                                     normal[ii + jj * 2 + kk * 4] = mix(x, y, z);
                                 }
 
                         program->bind();
-                        program->setUniformValue(u_color, voxel.getColor());
+                        program->setUniformValue(u_color, matrix[i][j][k].getColor());
                         bufferForVertices.bind();
                         bufferForVertices.allocate(vertices, sizeof(vertices));
                         bufferForNormals.bind();
@@ -192,15 +346,99 @@ void Drawer::paintGL()
                         bufferForVertices.release();
                         bufferForNormals.release();
                         program->release();
+
+                        if(GridFlag == 2)
+                        {
+
+                            program->bind();
+                            program->setUniformValue(u_color, black);
+                            vao.bind();
+                            glLineWidth(2);
+                            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+                            vao.release();
+                            program->release();
+                        }
+
+
                     }
+
+
                 }
+
+
+
 
     }
 }
 
+
+void Drawer:: paintGrid(int state)
+{
+    GridFlag = state;
+    scene = Scene();
+    Drawer::update();
+}
+
+void Drawer::DeleteLayerX(int x)
+{
+
+    int  y,z;
+    y = getYsize();
+    z = getZsize();
+    sizeX = x;
+    setExist(x,y,z);
+    scene = Scene();
+    QWidget::update();
+
+}
+
+void Drawer::DeleteLayerY(int y)
+{
+    int  x,z;
+
+    x = getXsize();
+    z = getZsize();
+    sizeY = y;
+    setExist(x,y,z);
+    scene = Scene();
+    QWidget::update();
+}
+
+void Drawer::DeleteLayerZ(int z)
+{
+
+    int  y,x;
+
+    y = getYsize();
+    x = getXsize();
+    sizeZ = z;
+    setExist(x,y,z);
+    scene = Scene();
+    QWidget::update();
+}
+
+//void Drawer::CameraCenter(int state)
+//{
+//    CameraFlag = state;
+//    scene = Scene();
+//    QWidget::update();
+//}
+
 void Drawer::keyPressEvent(QKeyEvent *event)
 {
-    Q_UNUSED(event);
+    if(event->key() == Qt::Key_W)
+        camera.translateBy(cameraSpeed, camera.forward());
+    if(event->key() == Qt::Key_S)
+        camera.translateBy(-cameraSpeed, camera.forward());
+    if(event->key() == Qt::Key_A)
+        camera.translateBy(-cameraSpeed, camera.right());
+    if(event->key() == Qt::Key_D)
+        camera.translateBy(cameraSpeed, camera.right());
+    if(event->key() == Qt::Key_Q)
+        camera.translateBy(-cameraSpeed, camera.up());
+    if(event->key() == Qt::Key_E)
+        camera.translateBy(cameraSpeed, camera.up());
+
     program->bind();
     program->setUniformValue(u_worldToCamera, camera.toMatrix());
     program->release();
@@ -219,8 +457,12 @@ void Drawer::mouseMoveEvent(QMouseEvent *pe)
 {
     if(pressed)
     {
-        camera.rotateX(rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width());
-        camera.rotateY(rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height());
+        camera.setRotation(
+                    rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width(),
+                    QVector3D(0.0f, 1.0f, 0.0f));
+        camera.setRotation(
+                    rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height(),
+                    camera.right());
         ptrMousePosition = pe->pos();
 
         program->bind();
@@ -231,21 +473,16 @@ void Drawer::mouseMoveEvent(QMouseEvent *pe)
     }
 }
 
-void Drawer::mouseReleaseEvent(QMouseEvent*){
+void Drawer::mouseReleaseEvent(QMouseEvent*)
+{
     pressed = false;
     QWidget::update();
 }
 
-void Drawer::wheelEvent(QWheelEvent *pe)
-{
-    if(pe->delta() < 0.0f)
-        camera.zoomIn();
-    else camera.zoomOut();
-    program->bind();
-    program->setUniformValue(u_worldToCamera, camera.toMatrix());
-    program->release();
-    QWidget::update();
-}
+
+
+
+
 
 void Drawer::update()
 {

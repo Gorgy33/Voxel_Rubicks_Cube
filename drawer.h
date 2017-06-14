@@ -1,5 +1,7 @@
+#pragma once
 #ifndef DRAWER_H
 #define DRAWER_H
+
 
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
@@ -11,6 +13,12 @@
 #include <QLCDNumber>
 #include <QSlider>
 #include <QLayout>
+#include <QCheckBox>
+#include <QWidget>
+#include <QLayout>
+#include <conio.h>
+#include <QPushButton>
+#include <vector>
 
 #include "scene.h"
 #include "voxelparameter.h"
@@ -30,6 +38,27 @@ public:
     void initializeGL();
     void resizeGL(int width, int height);
     void paintGL();
+    int GridFlag = 0;
+    int CameraFlag = 0;
+
+    int getXsize()      { return sizeX; }
+    int getYsize()      { return sizeY; }
+    int getZsize()      { return sizeZ; }
+
+    float getLength()   { return sideLength; }
+    void setCollor(int x, int y, int z);
+    void setExist(int x, int y, int z);
+
+
+
+
+public slots:
+    void paintGrid(int state);
+    void DeleteLayerX(int x);
+    void DeleteLayerY(int y);
+    void DeleteLayerZ(int z);
+//    void CameraCenter(int state);
+//    void mole();
 
 private:
     Scene scene;
@@ -50,17 +79,23 @@ private:
     GLuint u_color;
 
     float cameraSpeed       = 1.0f;
-    float rotatingSpeed     = 5.0f;
+    float rotatingSpeed     = 20.0f;
 
     bool pressed;
     QPoint ptrMousePosition;
+
+    vector< vector < vector < VoxelParam > > > matrix;
+    int sizeX;
+    int sizeY;
+    int sizeZ;
+    float sideLength;
+
 
 protected:
     void keyPressEvent(QKeyEvent* event);
     void mousePressEvent(QMouseEvent* pe);
     void mouseMoveEvent(QMouseEvent* pe);
     void mouseReleaseEvent(QMouseEvent*);
-    void wheelEvent(QWheelEvent* pe);
 protected slots:
     void update();
 };
