@@ -16,7 +16,10 @@ public:
     QVector3D forward() const;
     QVector3D up() const;
     QVector3D right() const;
-
+    void setCameraLockFlag(int flag) {this->CameraLockFlag = flag;}
+    int getCameraLockFlag() {return CameraLockFlag;}
+    void rotateX(float angle);
+    void rotateY(float angle);
 
 
     QMatrix4x4 toMatrix();
@@ -29,6 +32,15 @@ private:
     const static QVector3D LOCAL_FORWARD;
     const static QVector3D LOCAL_UP;
     const static QVector3D LOCAL_RIGHT;
+
+    int CameraLockFlag = 0;
+
+    float xAngle;
+    float yAngle;
+    float radius;
+
+    QVector3D position;
+
 
     QMatrix4x4 world;
 };

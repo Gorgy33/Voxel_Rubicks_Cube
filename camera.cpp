@@ -9,6 +9,10 @@ Camera::Camera()
     dirty = true;
     translation = QVector3D(1.5f, 1.5f, 10.0f);
     setRotation(0.0f, LOCAL_UP);
+    xAngle = 3.14f / 4.0f;
+    yAngle = 3.14f / 6.0f;
+    radius = 6.0f;
+
 
 }
 
@@ -32,8 +36,12 @@ QMatrix4x4 Camera::toMatrix()
         world.setToIdentity();
         world.rotate(rotation.conjugated());
         world.translate(-translation);
-//        if(drawer.CameraFlag == 2)
-//            world.lookAt(QVector3D(0.0f,0.5f,0.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
+        position = QVector3D(radius * sin(xAngle) * cos(yAngle) + 1.5f,
+                             radius * sin(yAngle) + 1.5f,
+                             radius * (cos(xAngle) * cos(yAngle)) + 1.5f);
+
+           world.lookAt(position, QVector3D(1.5f, 1.5f, 1.5f), QVector3D(0.0f, 1.0f, 0.0f));
+
         dirty = false;
     }
     return world;
@@ -52,6 +60,19 @@ QVector3D Camera::up() const
 QVector3D Camera::right() const
 {
     return rotation.rotatedVector(LOCAL_RIGHT);
+}
+
+void Camera::rotateX(float angle)
+{
+    dirty = true;
+    xAngle += angle;
+}
+
+void Camera::rotateY(float angle)
+{
+    dirty = true;
+    if(fabs(yAngle + angle) < 3.14f / 2.0f)
+        yAngle += angle;
 }
 
 

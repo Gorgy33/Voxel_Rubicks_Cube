@@ -57,7 +57,7 @@ public slots:
     void DeleteLayerX(int x);
     void DeleteLayerY(int y);
     void DeleteLayerZ(int z);
-//    void CameraCenter(int state);
+    void CameraCenter(int state);
 //    void mole();
 
 private:
@@ -79,7 +79,7 @@ private:
     GLuint u_color;
 
     float cameraSpeed       = 1.0f;
-    float rotatingSpeed     = 20.0f;
+    float rotatingSpeed     = 40.0f;
 
     bool pressed;
     QPoint ptrMousePosition;

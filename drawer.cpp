@@ -140,12 +140,12 @@ Drawer::~Drawer()
 Drawer::Drawer(QWidget *parent) :
     QOpenGLWidget(parent)
 {
-    double LengthX, LengthY, LengthZ, Step;
+    float LengthX, LengthY, LengthZ, Step;
     //Need to implement input from file
-    LengthX=30.0;
-    LengthY=30.0;
-    LengthZ=30.0;
-    Step=1.0;
+    LengthX=3.0;
+    LengthY=3.0;
+    LengthZ=3.0;
+    Step=0.1;
 
 
     int NodeSizeX, NodeSizeY, NodeSizeZ;
@@ -417,12 +417,12 @@ void Drawer::DeleteLayerZ(int z)
     QWidget::update();
 }
 
-//void Drawer::CameraCenter(int state)
-//{
-//    CameraFlag = state;
-//    scene = Scene();
-//    QWidget::update();
-//}
+void Drawer::CameraCenter(int state)
+{
+    camera.setCameraLockFlag(state);
+    scene = Scene();
+    QWidget::update();
+}
 
 void Drawer::keyPressEvent(QKeyEvent *event)
 {
@@ -455,7 +455,7 @@ void Drawer::mousePressEvent(QMouseEvent *pe)
 
 void Drawer::mouseMoveEvent(QMouseEvent *pe)
 {
-    if(pressed)
+    if(pressed && camera.getCameraLockFlag() == 0)
     {
         camera.setRotation(
                     rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width(),
@@ -468,9 +468,19 @@ void Drawer::mouseMoveEvent(QMouseEvent *pe)
         program->bind();
         program->setUniformValue(u_worldToCamera, camera.toMatrix());
         program->release();
-
-        QWidget::update();
     }
+
+    if(pressed && camera.getCameraLockFlag() == 2)
+    {
+        camera.rotateX((rotatingSpeed/4) * (GLfloat)(pe->x() - ptrMousePosition.x()) / width());
+        camera.rotateY((rotatingSpeed/4) * (GLfloat)(pe->y() - ptrMousePosition.y()) / height());
+        ptrMousePosition = pe->pos();
+
+        program->bind();
+        program->setUniformValue(u_worldToCamera, camera.toMatrix());
+        program->release();
+    }
+    QWidget::update();
 }
 
 void Drawer::mouseReleaseEvent(QMouseEvent*)
