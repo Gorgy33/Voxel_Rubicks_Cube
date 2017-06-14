@@ -39,7 +39,7 @@ public:
     void resizeGL(int width, int height);
     void paintGL();
     int GridFlag = 0;
-    int CameraFlag = 0;
+    int MoleFlag = 0;
 
     int getXsize()      { return sizeX; }
     int getYsize()      { return sizeY; }
@@ -49,16 +49,26 @@ public:
     void setCollor(int x, int y, int z);
     void setExist(int x, int y, int z);
 
+    int getMoleXsize()      { return moleXsize; }
+    int getMoleYsize()      { return moleYsize; }
+    int getMoleZsize()      { return moleZsize; }
 
 
 
+    void MoleMoveForward(int direction);
+    void MoleMoveRight(int direction);
+    void MoleMoveUp(int direction);
+
+    int Xdirection = 0, Ydirection = 0, Zdirection = 0;
+
+\
 public slots:
     void paintGrid(int state);
     void DeleteLayerX(int x);
     void DeleteLayerY(int y);
     void DeleteLayerZ(int z);
     void CameraCenter(int state);
-//    void mole();
+    void DrawMole(int state);
 
 private:
     Scene scene;
@@ -85,10 +95,17 @@ private:
     QPoint ptrMousePosition;
 
     vector< vector < vector < VoxelParam > > > matrix;
+
+    vector< vector < vector < VoxelParam > > > MoleMatrix;
     int sizeX;
     int sizeY;
     int sizeZ;
     float sideLength;
+
+    int moleXsize = 2;
+    int moleYsize = 1;
+    int moleZsize = 2;
+
 
 
 protected:

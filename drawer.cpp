@@ -62,6 +62,7 @@ QVector3D mix(QVector3D a, QVector3D b, QVector3D c)
 
 
 
+
 void Drawer:: setCollor(int x,int y,int z)
 {
     matrix.resize(x);
@@ -121,11 +122,28 @@ void Drawer:: setExist(int x, int y, int z)
                         matrix[i][j][k].setExists(true);
                     else
                         matrix[i][j][k].setExists(false);
-//                    if(i == 1 && j == 1 && k == 1)
-//                        matrix[i][j][k].setExists(true);
-//                    else
-//                        matrix[i][j][k].setExists(false);
                 }
+}
+
+void Drawer::MoleMoveForward(int direction)
+{
+    Zdirection  = Zdirection + direction;
+    scene = Scene();
+    QWidget::update();
+}
+
+void Drawer::MoleMoveRight(int direction)
+{
+    Xdirection  = Xdirection + direction;
+    scene = Scene();
+    QWidget::update();
+}
+
+void Drawer::MoleMoveUp(int direction)
+{
+    Ydirection  = Ydirection + direction;
+    scene = Scene();
+    QWidget::update();
 }
 
 
@@ -184,12 +202,19 @@ Drawer::Drawer(QWidget *parent) :
     QCheckBox *GridLine = new QCheckBox(tr("Show grid line"),parent);
     GridLine->setGeometry(900, 500, 120, 50);
 
-    QPushButton *Mole = new QPushButton(tr("Mole"), parent);
+    QCheckBox *Mole = new QCheckBox(tr("Mole"), parent);
     Mole->setGeometry(900, 350, 120, 50);
 
     QCheckBox *LockCamera = new QCheckBox(tr("Lock Camera"),parent);
     LockCamera->setGeometry(900, 450, 120, 50);
 
+
+
+
+    QLCDNumber *lcdMole = new QLCDNumber(2, parent);
+    lcdMole->setSegmentStyle(QLCDNumber::Filled);
+    lcdMole->setGeometry(900, 300, 50, 30);
+    lcdMole->display(0);
 
 
     connect(sliderX, SIGNAL(valueChanged(int)),
@@ -215,6 +240,8 @@ Drawer::Drawer(QWidget *parent) :
     connect(sliderY, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerY(int)));
     connect(sliderZ, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerZ(int)));
 
+    connect(Mole, SIGNAL(stateChanged(int)), this, SLOT(DrawMole(int)));
+    connect(Mole, SIGNAL(stateChanged(int)), lcdMole, SLOT(display(int)));
 
     sideLength = Step;
 
@@ -364,7 +391,58 @@ void Drawer::paintGL()
 
 
                 }
+            if(MoleFlag == 2)
+            {
+                MoleMatrix.resize(getMoleXsize());
+                for(int i = 0; i < getMoleXsize(); ++i)
+                {
+                    MoleMatrix[i].resize(getMoleYsize());
+                    for(int j = 0; j < getMoleYsize(); j++)
+                        MoleMatrix[i][j].resize(getMoleZsize());
+                }
 
+
+                QVector3D white = QVector3D (1.0f, 1.0f, 1.0f);
+                for(int i = getXsize() + 1 - Xdirection; i < getXsize() + 1 + getMoleXsize() - Xdirection; ++i)
+                    for(int j = getYsize() + 1 - Ydirection; j < getYsize() + 1 + getMoleYsize() - Ydirection; ++j)
+                        for(int k = getZsize() +1 - Zdirection; k < getZsize() + 1 + getMoleZsize() - Zdirection; ++k)
+                        {
+
+                                float length = getLength();
+                                QVector3D vertices[8];
+
+                                vertices[0] = QVector3D(i * length, j * length, k * length);
+                                vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
+                                vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
+                                vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
+                                vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
+                                vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
+                                vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
+                                vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
+
+                                program->bind();
+                                program->setUniformValue(u_color, black);
+                                bufferForVertices.bind();
+                                bufferForVertices.allocate(vertices, sizeof(vertices));
+
+
+                                vao.bind();
+                                glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+                                vao.release();
+                                bufferForVertices.release();
+                                program->release();
+
+                                program->bind();
+                                program->setUniformValue(u_color, white);
+                                vao.bind();
+                                glLineWidth(2);
+                                glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+                                vao.release();
+                                program->release();
+
+
+                        }
+            }
 
 
 
@@ -424,6 +502,13 @@ void Drawer::CameraCenter(int state)
     QWidget::update();
 }
 
+void Drawer::DrawMole(int state)
+{
+    MoleFlag = state;
+    scene = Scene();
+    QWidget::update();
+}
+
 void Drawer::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_W)
@@ -438,7 +523,18 @@ void Drawer::keyPressEvent(QKeyEvent *event)
         camera.translateBy(-cameraSpeed, camera.up());
     if(event->key() == Qt::Key_E)
         camera.translateBy(cameraSpeed, camera.up());
-
+    if(event->key() == Qt::Key_Up)
+        MoleMoveForward(1);
+    if(event->key() == Qt::Key_Down)
+        MoleMoveForward(-1);
+    if(event->key() == Qt::Key_Left)
+        MoleMoveRight(1);
+    if(event->key() == Qt::Key_Right)
+        MoleMoveRight(-1);
+    if(event->key() == Qt::Key_Control)
+        MoleMoveUp(-1);
+    if(event->key() == Qt::Key_Shift)
+        MoleMoveUp(1);
     program->bind();
     program->setUniformValue(u_worldToCamera, camera.toMatrix());
     program->release();
@@ -455,30 +551,33 @@ void Drawer::mousePressEvent(QMouseEvent *pe)
 
 void Drawer::mouseMoveEvent(QMouseEvent *pe)
 {
-    if(pressed && camera.getCameraLockFlag() == 0)
+    if(pressed)
     {
-        camera.setRotation(
-                    rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width(),
-                    QVector3D(0.0f, 1.0f, 0.0f));
-        camera.setRotation(
-                    rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height(),
-                    camera.right());
-        ptrMousePosition = pe->pos();
+        if(camera.getCameraLockFlag() == 0)
+        {
+            camera.setRotation(
+                        rotatingSpeed * (GLfloat)(pe->x() - ptrMousePosition.x()) / width(),
+                        QVector3D(0.0f, 1.0f, 0.0f));
+            camera.setRotation(
+                        rotatingSpeed * (GLfloat)(pe->y() - ptrMousePosition.y()) / height(),
+                        camera.right());
+            ptrMousePosition = pe->pos();
 
-        program->bind();
-        program->setUniformValue(u_worldToCamera, camera.toMatrix());
-        program->release();
-    }
+            program->bind();
+            program->setUniformValue(u_worldToCamera, camera.toMatrix());
+            program->release();
+        }
 
-    if(pressed && camera.getCameraLockFlag() == 2)
-    {
-        camera.rotateX((rotatingSpeed/4) * (GLfloat)(pe->x() - ptrMousePosition.x()) / width());
-        camera.rotateY((rotatingSpeed/4) * (GLfloat)(pe->y() - ptrMousePosition.y()) / height());
-        ptrMousePosition = pe->pos();
+        else
+        {
+            camera.rotateX((rotatingSpeed/4) * (GLfloat)(pe->x() - ptrMousePosition.x()) / width());
+            camera.rotateY((rotatingSpeed/4) * (GLfloat)(pe->y() - ptrMousePosition.y()) / height());
+            ptrMousePosition = pe->pos();
 
-        program->bind();
-        program->setUniformValue(u_worldToCamera, camera.toMatrix());
-        program->release();
+            program->bind();
+            program->setUniformValue(u_worldToCamera, camera.toMatrix());
+            program->release();
+        }
     }
     QWidget::update();
 }
