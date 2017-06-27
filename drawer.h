@@ -19,6 +19,7 @@
 #include <conio.h>
 #include <QPushButton>
 #include <vector>
+#include <QLabel>
 
 #include "scene.h"
 #include "voxelparameter.h"
@@ -40,6 +41,11 @@ public:
     void paintGL();
     int GridFlag = 0;
     int MoleFlag = 0;
+    int BoxFlag = 0;
+    int PolygonalGridFlag = 0;
+    int test1 = 0;
+    bool contourFlag = false;
+    int oldSizeX, oldSizeY, oldSizeZ;
 
     int getXsize()      { return sizeX; }
     int getYsize()      { return sizeY; }
@@ -56,10 +62,11 @@ public:
 
 
     void MoleMoveForward(int direction);
-    void MoleMoveRight(int direction);
-    void MoleMoveUp(int direction);
+    void MoleMoveLeft(int direction);
+    void MoleMoveDown(int direction);
+    void deleteVoxel(int i, int j, int k);
 
-    int Xdirection = 0, Ydirection = 0, Zdirection = 0;
+    int Xdirection = 0, Ydirection = 0, Zdirection = 0; //For Mole
 
 \
 public slots:
@@ -69,6 +76,9 @@ public slots:
     void DeleteLayerZ(int z);
     void CameraCenter(int state);
     void DrawMole(int state);
+    void DrawBox(int state);
+    void paintPolygonalGrid(int state);
+    void HelpWindow();
 
 private:
     Scene scene;
@@ -97,14 +107,16 @@ private:
     vector< vector < vector < VoxelParam > > > matrix;
 
     vector< vector < vector < VoxelParam > > > MoleMatrix;
+
+
     int sizeX;
     int sizeY;
     int sizeZ;
     float sideLength;
 
-    int moleXsize = 2;
-    int moleYsize = 1;
-    int moleZsize = 2;
+    int moleXsize = 3;
+    int moleYsize = 3;
+    int moleZsize = 1;
 
 
 

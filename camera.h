@@ -20,7 +20,7 @@ public:
     int getCameraLockFlag() {return CameraLockFlag;}
     void rotateX(float angle);
     void rotateY(float angle);
-
+    float cameraCenterX, cameraCenterY, cameraCenterZ;
 
     QMatrix4x4 toMatrix();
 

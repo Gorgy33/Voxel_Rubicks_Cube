@@ -40,7 +40,7 @@ QMatrix4x4 Camera::toMatrix()
                              radius * sin(yAngle) + 1.5f,
                              radius * (cos(xAngle) * cos(yAngle)) + 1.5f);
 
-           world.lookAt(position, QVector3D(1.5f, 1.5f, 1.5f), QVector3D(0.0f, 1.0f, 0.0f));
+           world.lookAt(position, QVector3D(cameraCenterX, cameraCenterY, cameraCenterZ), QVector3D(0.0f, 1.0f, 0.0f));
 
         dirty = false;
     }
