@@ -18,13 +18,14 @@
 #include <QLayout>
 #include <conio.h>
 #include <QPushButton>
-#include <vector>
 #include <QLabel>
+#include <omp.h>
+#include <fstream>
+#include <vector>
 
 #include "scene.h"
 #include "voxelparameter.h"
 #include "camera.h"
-
 
 
 class QOpenGLShaderProgram;
@@ -43,6 +44,7 @@ public:
     int MoleFlag = 0;
     int BoxFlag = 0;
     int PolygonalGridFlag = 0;
+    int delflag = 0;
     int test1 = 0;
     bool contourFlag = false;
     int oldSizeX, oldSizeY, oldSizeZ;
@@ -54,21 +56,27 @@ public:
     float getLength()   { return sideLength; }
     void setCollor(int x, int y, int z);
     void setExist(int x, int y, int z);
+    void setDrawStatus(int x, int y, int z);
 
     int getMoleXsize()      { return moleXsize; }
     int getMoleYsize()      { return moleYsize; }
     int getMoleZsize()      { return moleZsize; }
 
-
+    int NodeSizeX, NodeSizeY, NodeSizeZ;
 
     void MoleMoveForward(int direction);
     void MoleMoveLeft(int direction);
     void MoleMoveDown(int direction);
     void deleteVoxel(int i, int j, int k);
 
-    int Xdirection = 0, Ydirection = 0, Zdirection = 0; //For Mole
+    void VoxelSplain();
+    char CheckDirection();
 
-\
+    int Xdirection = 0, Ydirection = 0, Zdirection = 0; //For Mole
+    QVector3D points[2];
+    short int pointcount = 0;
+
+
 public slots:
     void paintGrid(int state);
     void DeleteLayerX(int x);
@@ -114,8 +122,8 @@ private:
     int sizeZ;
     float sideLength;
 
-    int moleXsize = 3;
-    int moleYsize = 3;
+    int moleXsize = 1;
+    int moleYsize = 1;
     int moleZsize = 1;
 
 

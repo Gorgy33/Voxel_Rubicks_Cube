@@ -3,16 +3,6 @@
 
 
 
-int indices[36] =
-{
-    0, 1, 4, 1, 4, 5, // front
-    1, 3, 5, 3, 5, 7, // right
-    0, 2, 4, 2, 4, 6, // left
-    0, 1, 2, 1, 2, 3, // bottom
-    4, 5, 6, 5, 6, 7, // top
-    2, 3, 6, 3, 6, 7  // back
-};
-
 int lineIndices[24] =
 {
     0, 1 , 0, 2, 0, 4,
@@ -30,8 +20,8 @@ int quadIndices[3] =
 };
 int trianglelineIndices[6] =
 {
-  0, 1, 0, 2,
-  1, 2
+    0, 1, 0, 2,
+    1, 2
 };
 
 
@@ -45,7 +35,88 @@ QVector3D mix(QVector3D a, QVector3D b, QVector3D c)
     return (a + b + c) / 3.0;
 }
 
+void Drawer::setDrawStatus(int x, int y, int z) //FRLBTH
+{
+    //x - ширина, y - высота, z - глубина
+    if (x == 0)
+    {
+        if(y == 0)
+        {
+            if (z == 0)
+                matrix[x][y][z].setStatus("LBH");
+            else if (z == NodeSizeZ)
+                matrix[x][y][z].setStatus("FLB");
+            else // x == 0 && y == 0 && 0<z<NodeSizeZ
+                matrix[x][y][z].setStatus("LB");
+        }
+        else if (y == NodeSizeY)
+        {
+            if (z == 0)
+                matrix[x][y][z].setStatus("LTH");
+            else if (z == NodeSizeZ)
+                matrix[x][y][z].setStatus("FLT");
+            else // x == 0 && y == NodeSizeY && 0<z<NodeSizeZ
+                matrix[x][y][z].setStatus("LT");
 
+        }
+        else if(z == 0)
+            matrix[x][y][z].setStatus("LH");
+        else if(z == NodeSizeZ)
+            matrix[x][y][z].setStatus("FL");
+        else // x == 0 && 0<y<NodeSizeY && 0<z<NodeSizeZ
+            matrix[x][y][z].setStatus("L");
+    }
+    else if(x == NodeSizeX)
+    {
+        if(y == 0)
+        {
+            if (z == 0)
+                matrix[x][y][z].setStatus("RBH");
+            else if (z == NodeSizeZ)
+                matrix[x][y][z].setStatus("FRB");
+            else
+                matrix[x][y][z].setStatus("RB");
+        }
+        else if (y == NodeSizeY)
+        {
+            if (z == 0)
+                matrix[x][y][z].setStatus("RTH");
+            else if (z == NodeSizeZ)
+                matrix[x][y][z].setStatus("FRT");
+            else
+                matrix[x][y][z].setStatus("RT");
+        }
+        else if(z == 0)
+            matrix[x][y][z].setStatus("RH");
+        else if(z == NodeSizeZ)
+            matrix[x][y][z].setStatus("FR");
+        else
+            matrix[x][y][z].setStatus("R");
+    }
+    else if(y == 0)  // 0<x<NodeSizeX
+    {
+        if(z == 0)
+            matrix[x][y][z].setStatus("BH");
+        else if(z == NodeSizeZ)
+            matrix[x][y][z].setStatus("FB");
+        else
+            matrix[x][y][z].setStatus("B");
+    }
+    else if(y == NodeSizeY)
+    {
+        if(z == 0)
+            matrix[x][y][z].setStatus("TH");
+        else if(z == NodeSizeZ)
+            matrix[x][y][z].setStatus("FT");
+        else
+            matrix[x][y][z].setStatus("T");
+    }
+    else if(z == 0) // 0<x<NodeSizeX && 0<y<NodeSizeY
+        matrix[x][y][z].setStatus("H");
+    else if(z == NodeSizeZ)
+        matrix[x][y][z].setStatus("F");
+
+}
 
 
 void Drawer:: setCollor(int x,int y,int z)
@@ -64,18 +135,20 @@ void Drawer:: setCollor(int x,int y,int z)
     sizeZ = z;
 
     float r,g,b;
-
     for(int i = 0; i < x; i++)
         for(int j = 0; j < y; j++)
             for(int k = 0; k < z; k++)
             {
                 QVector3D color;
-                r = rand()%256;
-                r = r/255;
-                g = rand()%256;
-                g = g/255;
-                b = rand()%256;
-                b = b/255;
+                //                r = rand()%256;
+                //                r = r/255;
+                //                g = rand()%256;
+                //                g = g/255;
+                //                b = rand()%256;
+                //                b = b/255;
+                r = 0.0f;
+                g = 128.0f;
+                b = 0.0f;
 
                 color = QVector3D(r, g, b);
 
@@ -86,7 +159,7 @@ void Drawer:: setCollor(int x,int y,int z)
 
 void Drawer:: setExist(int x, int y, int z)
 {
-    if (BoxFlag == 2)
+    if (!BoxFlag)
     {
         for(int i = 0; i < x; ++i)
             for(int j = 0; j < y; ++j)
@@ -95,6 +168,7 @@ void Drawer:: setExist(int x, int y, int z)
 
                     if(((i == 0) || (i == (x -1)) || (j == 0) ||  (j == (y -1)) || (k == 0) ||  (k == (z -1))) && !matrix[i][j][k].isDel())
                         matrix[i][j][k].setExists(true);
+                    //setDrawStatus(i,j,k);
                     else
                         matrix[i][j][k].setExists(false);
                 }
@@ -112,29 +186,82 @@ void Drawer:: setExist(int x, int y, int z)
                 }
     }
 
-    if(test1 == 1)
-    {
-        for(int i = 0; i < x; ++i)
-            for(int j = 0; j < y; ++j)
-                for(int k = 0; k < z; ++k)
-                {
-                   matrix[i][j][k].setExists(false);
-                }
-        int i=0;
-        while(i<x)
-        {
-            for(int j = 0; j < i; ++j)
-                for(int k = 0; k < i; ++k)
-                {
-                    matrix[i][j][k].setExists(true);
-                }
-            i++;
-        }
-    }
-
 }
 
+char Drawer::CheckDirection()
+{
+    int dx = (int)abs(points[1].x() - points[0].x());
+    int dy = (int)abs(points[1].y() - points[0].y());
+    int dz = (int)abs(points[1].z() - points[0].z());
+    if(dx < dy)
+        if(dx < dz)
+            return 'x';
+        else
+            return 'z';
+    else
+        if(dy < dz)
+            return 'y';
+        else
+            return 'z';
+}
 
+/*void Drawer::VoxelSplain()
+{
+    fstream out("log.txt", fstream::app);
+    char dir = CheckDirection();
+    out<<dir<<"\t";
+    switch(dir)
+    {
+    case 'x' : {
+        int x = getYsize()/(int)(abs(points[1].x() - points[0].x()));
+        out<<"x="<<x<<endl;
+        if(points[0].x() > points[1].x())
+            for(int k = points[0].x(); k > points[1].x(); --k)
+                for(int i = 0 + x*((int)points[0].x() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+        else
+            for(int k = points[1].x(); k > points[0].x(); --k)
+                for(int i = 0 + x*((int)points[1].x() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+
+
+        break;};
+    case 'y' : {
+        int y = getXsize()/(int)(abs(points[1].y() - points[0].y()));
+        out<<"y="<<y<<endl;
+        if(points[0].y() > points[1].y())
+            for(int k = points[0].y(); k > points[1].y(); k--)
+                for(int i = 0 + y*((int)points[0].y() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+        else
+            for(int k = points[1].y(); k > points[0].y(); --k)
+                for(int i = 0 + y*((int)points[1].y() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+
+        break;}
+    case 'z' : {
+        int z = getXsize()/(int)(abs(points[1].z() - points[0].z()));
+        out<<"z="<<z<<endl;
+        if(points[0].z() > points[1].z())
+            for(int k = points[0].z(); k > points[1].z(); --k)
+                for(int i = 0 + z*((int)points[0].z() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+        else
+            for(int k = points[1].z(); k > points[0].z(); --k)
+                for(int i = 0 + z*((int)points[1].z() - k); i< getXsize(); ++i)
+                    for(int j = 0; j < getZsize(); ++j)
+                        deleteVoxel(i,k, j);
+
+
+        break;}
+    }
+}
+*/
 
 
 void Drawer::MoleMoveForward(int direction)
@@ -217,10 +344,10 @@ Drawer::Drawer(QWidget *parent) :
     LengthX=3.0f;
     LengthY=3.0f;
     LengthZ=3.0f;
-    Step=0.1f;
+    Step=1.0f;
 
 
-    int NodeSizeX, NodeSizeY, NodeSizeZ;
+
     NodeSizeX = LengthX/Step;
     NodeSizeY = LengthY/Step;
     NodeSizeZ = LengthZ/Step;
@@ -273,22 +400,22 @@ Drawer::Drawer(QWidget *parent) :
 
     connect(Help, SIGNAL(pressed()), this, SLOT(HelpWindow()));
     connect(sliderX, SIGNAL(valueChanged(int)),
-                lcdX, SLOT(display(int)));
+            lcdX, SLOT(display(int)));
 
     connect(sliderY, SIGNAL(valueChanged(int)),
-                lcdY, SLOT(display(int)));
+            lcdY, SLOT(display(int)));
 
     connect(sliderZ, SIGNAL(valueChanged(int)),
-                lcdZ, SLOT(display(int)));
+            lcdZ, SLOT(display(int)));
 
 
 
 
 
     connect(GridLine, SIGNAL(stateChanged(int)),
-                this, SLOT(paintGrid(int)));
+            this, SLOT(paintGrid(int)));
     connect(LockCamera, SIGNAL(stateChanged(int)),
-                this, SLOT(CameraCenter(int)));
+            this, SLOT(CameraCenter(int)));
 
 
     connect(sliderX, SIGNAL(valueChanged(int)), this, SLOT(DeleteLayerX(int)));
@@ -305,6 +432,7 @@ Drawer::Drawer(QWidget *parent) :
     oldSizeZ = NodeSizeZ;
 
     setCollor(NodeSizeX, NodeSizeY, NodeSizeZ);
+    setExist(NodeSizeX, NodeSizeY, NodeSizeZ);
 
     scene = Scene();
 
@@ -338,7 +466,7 @@ void Drawer::initializeGL()
     bufferForVertices = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     bufferForVertices.create();
     bufferForVertices.bind();
-    bufferForVertices.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufferForVertices.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
     program->enableAttributeArray(0);
     program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
@@ -346,7 +474,7 @@ void Drawer::initializeGL()
     bufferForNormals = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     bufferForNormals.create();
     bufferForNormals.bind();
-    bufferForNormals.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufferForNormals.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
     program->enableAttributeArray(1);
     program->setAttributeBuffer(1, GL_FLOAT, 0, 3, 0);
@@ -360,7 +488,7 @@ void Drawer::initializeGL()
 void Drawer::resizeGL(int width, int height)
 {
     cameraToView.setToIdentity();
-    cameraToView.perspective(45.0f, width / float(height), 0.0f, 10000000000000.0f);
+    cameraToView.perspective(45.0f, width / float(height), 0.0f, 10e12f);
     program->bind();
     program->setUniformValue(u_cameraToView, cameraToView);
     program->release();
@@ -399,6 +527,7 @@ void Drawer::paintGL()
                         base[5] = QVector3D(0.0f, 0.0f, 1.0f);
 
                         QVector3D normal[8];
+
                         for(int kk = 0; kk < 2; kk++)
                             for(int jj = 0; jj < 2; jj++)
                                 for(int ii = 0; ii < 2; ii++)
@@ -420,20 +549,87 @@ void Drawer::paintGL()
                             vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
                             vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
                             vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
-
+                            /*int indices[24] =
+                            {
+                                0, 1, 5, 4, // front
+                                1, 3, 7, 5, // right
+                                0, 2, 6, 4, // left
+                                0, 1, 3, 2, // bottom
+                                4, 5, 7, 6, // top
+                                2, 3, 7, 6  // hind
+                            };*/
+                            std::string status = matrix[i][j][k].getStatus();
+                            const int indicesSize = 4*status.length();
+                            int* indices = new int[indicesSize];
+                            int c = 0;
+                            for(int b = 0; b < status.length(); b++)
+                            {
+                                char s = status[b];
+                                switch(s)
+                                {
+                                case 'F':{
+                                    indices[0 + 4 * c] = 0;
+                                    indices[1 + 4 * c] = 1;
+                                    indices[2 + 4 * c] = 5;
+                                    indices[3 + 4 * c] = 4;
+                                    c++;
+                                    break;
+                                }
+                                case 'R':{
+                                    indices[0 + 4 * c] = 1;
+                                    indices[1 + 4 * c] = 3;
+                                    indices[2 + 4 * c] = 7;
+                                    indices[3 + 4 * c] = 5;
+                                    c++;
+                                    break;
+                                }
+                                case 'L':{
+                                    indices[0 + 4 * c] = 0;
+                                    indices[1 + 4 * c] = 2;
+                                    indices[2 + 4 * c] = 6;
+                                    indices[3 + 4 * c] = 4;
+                                    c++;
+                                    break;
+                                }
+                                case 'B':{
+                                    indices[0 + 4 * c] = 0;
+                                    indices[1 + 4 * c] = 1;
+                                    indices[2 + 4 * c] = 3;
+                                    indices[3 + 4 * c] = 2;
+                                    c++;
+                                    break;
+                                }
+                                case 'T':{
+                                    indices[0 + 4 * c] = 4;
+                                    indices[1 + 4 * c] = 5;
+                                    indices[2 + 4 * c] = 7;
+                                    indices[3 + 4 * c] = 6;
+                                    c++;
+                                    break;
+                                }
+                                case 'H':{
+                                    indices[0 + 4 * c] = 2;
+                                    indices[1 + 4 * c] = 3;
+                                    indices[2 + 4 * c] = 7;
+                                    indices[3 + 4 * c] = 6;
+                                    c++;
+                                    break;
+                                }
+                                }
+                            }
                             program->bind();
                             program->setUniformValue(u_color, matrix[i][j][k].getColor());
                             bufferForVertices.bind();
                             bufferForVertices.allocate(vertices, sizeof(vertices));
                             bufferForNormals.bind();
                             bufferForNormals.allocate(normal, sizeof(normal));
-
                             vao.bind();
-                            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+                            glDrawElements(GL_QUADS, indicesSize, GL_UNSIGNED_INT, indices); // почитать про примитивы
                             vao.release();
                             bufferForVertices.release();
                             bufferForNormals.release();
                             program->release();
+
 
                             if(GridFlag == 2)
                             {
@@ -463,8 +659,8 @@ void Drawer::paintGL()
                                             continue;
                                         if(matrix[i+ii][j+jj][k+kk].isExists() && !matrix[i+ii][j+jj][k+kk].isDel())
                                         {
-                                                VoxelCenterPoint[count] = QVector3D(((((i+ii) * length) + ((i+ii+1)*length))/2.0f), ((((j+jj) * length) + ((j+jj+1)*length))/2.0f), ((((k+kk) * length) + ((k+kk+1)*length))/2.0f));
-                                                count++;
+                                            VoxelCenterPoint[count] = QVector3D(((((i+ii) * length) + ((i+ii+1)*length))/2.0f), ((((j+jj) * length) + ((j+jj+1)*length))/2.0f), ((((k+kk) * length) + ((k+kk+1)*length))/2.0f));
+                                            count++;
                                         }
                                         if(count == 3)
                                         {
@@ -511,87 +707,85 @@ void Drawer::paintGL()
 
                 }
 
-    if(MoleFlag == 2)
-    {
-        MoleMatrix.resize(getMoleXsize());
-        for(int i = 0; i < getMoleXsize(); ++i)
+       /* if(MoleFlag == 2)
         {
-            MoleMatrix[i].resize(getMoleYsize());
-            for(int j = 0; j < getMoleYsize(); j++)
-                MoleMatrix[i][j].resize(getMoleZsize());
+            MoleMatrix.resize(getMoleXsize());
+            for(int i = 0; i < getMoleXsize(); ++i)
+            {
+                MoleMatrix[i].resize(getMoleYsize());
+                for(int j = 0; j < getMoleYsize(); j++)
+                    MoleMatrix[i][j].resize(getMoleZsize());
+            }
+
+            QVector3D white = QVector3D (1.0f, 1.0f, 1.0f);
+            for(int i = getXsize() - Xdirection; i < getXsize() + getMoleXsize() - Xdirection; ++i)
+                for(int j = getYsize() - Ydirection; j < getYsize() + getMoleYsize() - Ydirection; ++j)
+                    for(int k = getZsize() - Zdirection; k < getZsize() + getMoleZsize() - Zdirection; ++k)
+                    {
+                        QVector3D vertices[8];
+
+                        vertices[0] = QVector3D(i * length, j * length, k * length);
+                        vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
+                        vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
+                        vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
+                        vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
+                        vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
+                        vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
+                        vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
+
+                        program->bind();
+                        program->setUniformValue(u_color, white);
+                        bufferForVertices.bind();
+                        bufferForVertices.allocate(vertices, sizeof(vertices));
+
+                        vao.bind();
+                        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+                        vao.release();
+                        bufferForVertices.release();
+                        program->release();
+
+                        program->bind();
+                        program->setUniformValue(u_color, black);
+                        vao.bind();
+                        glLineWidth(2);
+                        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+                        vao.release();
+                        program->release();
+                        if(delflag)
+                            for(int ii = 0; ii < getXsize(); ii++)
+                                for(int jj = 0; jj < getYsize(); jj++)
+                                    for(int kk = 0; kk < getZsize(); kk++)
+                                        if((i == ii) && (j == jj) & (k == kk))
+                                            deleteVoxel(i,j,k);
+                    }
+        }*/
+        if(contourFlag)
+        {
+            QVector3D contourVertices[8];
+            float x,y,z;
+            x = oldSizeX;
+            y = oldSizeY;
+            z = oldSizeZ;
+            contourVertices[0] = QVector3D(0.0f,0.0f,0.0f);
+            contourVertices[1] = QVector3D(0.0f,0.0f,z*length);
+            contourVertices[2] = QVector3D(0.0f,y*length,0.0f);
+            contourVertices[3] = QVector3D(0.0f,y*length,z*length);
+            contourVertices[4] = QVector3D(x*length,0.0f,0.0f);
+            contourVertices[5] = QVector3D(x*length,0.0f,z*length);
+            contourVertices[6] = QVector3D(x*length,y*length,0.0f);
+            contourVertices[7] = QVector3D(x*length,y*length,z*length);
+            program->bind();
+            program->setUniformValue(u_color, black);
+            bufferForVertices.bind();
+            bufferForVertices.allocate(contourVertices, sizeof(contourVertices));
+
+            vao.bind();
+            glLineWidth(2);
+            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+            vao.release();
+            bufferForVertices.release();
+            program->release();
         }
-
-        QVector3D white = QVector3D (1.0f, 1.0f, 1.0f);
-        for(int i = getXsize() - Xdirection; i < getXsize() + getMoleXsize() - Xdirection; ++i)
-            for(int j = getYsize() - Ydirection; j < getYsize() + getMoleYsize() - Ydirection; ++j)
-                for(int k = getZsize() - Zdirection; k < getZsize() + getMoleZsize() - Zdirection; ++k)
-                {
-                    QVector3D vertices[8];
-
-                    vertices[0] = QVector3D(i * length, j * length, k * length);
-                    vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
-                    vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
-                    vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
-                    vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
-                    vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
-                    vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
-                    vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
-
-                    program->bind();
-                    program->setUniformValue(u_color, white);
-                    bufferForVertices.bind();
-                    bufferForVertices.allocate(vertices, sizeof(vertices));
-
-                    vao.bind();
-                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
-                    vao.release();
-                    bufferForVertices.release();
-                    program->release();
-
-                    program->bind();
-                    program->setUniformValue(u_color, black);
-                    vao.bind();
-                    glLineWidth(2);
-                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
-                    vao.release();
-                    program->release();
-
-                    for(int ii = 0; ii < getXsize(); ii++)
-                        for(int jj = 0; jj < getYsize(); jj++)
-                            for(int kk = 0; kk < getZsize(); kk++)
-                            {
-                                if((i == ii) && (j == jj) & (k == kk))
-                                    deleteVoxel(i,j,k);
-                            }
-                }
-    }
-    if(contourFlag)
-    {
-        QVector3D contourVertices[8];
-        float x,y,z;
-        x = oldSizeX;
-        y = oldSizeY;
-        z = oldSizeZ;
-        contourVertices[0] = QVector3D(0.0f,0.0f,0.0f);
-        contourVertices[1] = QVector3D(0.0f,0.0f,z*length);
-        contourVertices[2] = QVector3D(0.0f,y*length,0.0f);
-        contourVertices[3] = QVector3D(0.0f,y*length,z*length);
-        contourVertices[4] = QVector3D(x*length,0.0f,0.0f);
-        contourVertices[5] = QVector3D(x*length,0.0f,z*length);
-        contourVertices[6] = QVector3D(x*length,y*length,0.0f);
-        contourVertices[7] = QVector3D(x*length,y*length,z*length);
-        program->bind();
-        program->setUniformValue(u_color, black);
-        bufferForVertices.bind();
-        bufferForVertices.allocate(contourVertices, sizeof(contourVertices));
-
-        vao.bind();
-        glLineWidth(2);
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
-        vao.release();
-        bufferForVertices.release();
-        program->release();
-    }
     }
 }
 
@@ -623,7 +817,7 @@ void Drawer::DeleteLayerX(int x)
 void Drawer::DeleteLayerY(int y)
 {
 
-    int  x,z;    
+    int  x,z;
     x = getXsize();
     z = getZsize();
     sizeY = y;
@@ -639,7 +833,7 @@ void Drawer::DeleteLayerY(int y)
 void Drawer::DeleteLayerZ(int z)
 {
 
-    int  y,x;    
+    int  y,x;
     y = getYsize();
     x = getXsize();
     sizeZ = z;
@@ -687,25 +881,25 @@ void Drawer::paintPolygonalGrid(int state)
 
 void Drawer::HelpWindow()
 {
-        QString text = "<b>Управление камерой</b> <br>"
-                       "W - движение камеры вперед <br> S - движение камеры назад <br> "
-                       "A - движение камеры влево <br> D - движение камеры вправо <br> "
-                       "Q - движение камеры вниз <br> E - движение камеры вверх <br> "
-                       "Для поворота камеры необходимо зажать левую клавишу мыши и сдвинуть курсор в необходимом направлении <br>"
-                       "При включенной функции блокировки камеры вместо смещения камеры будет произведен поворот объекта <br>"
-                       "<br>"
-                       "<b>Управление объектом \"Крот\"</b> <br>"
-                       "Стрелка вверх - движение объекта \"Крот\" по направлению оси oZ <br>"
-                       "Стрелка вниз - движение объекта \"Крот\" против направления оси oZ <br>"
-                       "Стрелка влево - движение объекта \"Крот\" по направлению оси oX <br>"
-                       "Стрелка вправо - движение объекта \"Крот\" против направления оси oX <br>"
-                       "NumPad Клавиша \"1\" - движение объекта \"Крот\" против направления оси oY <br>"
-                       "NumPad клавиша \"4\" - движение объекта \"Крот\" по направлению оси oY <br>";
+    QString text = "<b>Управление камерой</b> <br>"
+                   "W - движение камеры вперед <br> S - движение камеры назад <br> "
+                   "A - движение камеры влево <br> D - движение камеры вправо <br> "
+                   "Q - движение камеры вниз <br> E - движение камеры вверх <br> "
+                   "Для поворота камеры необходимо зажать левую клавишу мыши и сдвинуть курсор в необходимом направлении <br>"
+                   "При включенной функции блокировки камеры вместо смещения камеры будет произведен поворот объекта <br>"
+                   "<br>"
+                   "<b>Управление объектом \"Крот\"</b> <br>"
+                   "Стрелка вверх - движение объекта \"Крот\" по направлению оси oZ <br>"
+                   "Стрелка вниз - движение объекта \"Крот\" против направления оси oZ <br>"
+                   "Стрелка влево - движение объекта \"Крот\" по направлению оси oX <br>"
+                   "Стрелка вправо - движение объекта \"Крот\" против направления оси oX <br>"
+                   "NumPad Клавиша \"1\" - движение объекта \"Крот\" против направления оси oY <br>"
+                   "NumPad клавиша \"4\" - движение объекта \"Крот\" по направлению оси oY <br>";
 
-        QLabel *lbl = new QLabel(text, nullptr);
-        lbl->resize(1024, 720);
-        lbl->setStyleSheet("font-size: 16px");
-        lbl->show();
+    QLabel *lbl = new QLabel(text, nullptr);
+    lbl->resize(1024, 720);
+    lbl->setStyleSheet("font-size: 16px");
+    lbl->show();
 }
 
 void Drawer::keyPressEvent(QKeyEvent *event)
@@ -736,13 +930,24 @@ void Drawer::keyPressEvent(QKeyEvent *event)
             MoleMoveDown(1);
         if(event->key() == Qt::Key_4)
             MoleMoveDown(-1);
+        if(event->key() == Qt::Key_5)
+        {
+            delflag++;
+            delflag%=2;
+            scene = Scene();
+            QWidget::update();
+        }
+        /*if(event->key() == Qt::Key_7)
+        {
+            points[pointcount] = QVector3D((int)(getXsize() - Xdirection - 1), (int)(getYsize() - Ydirection - 1), (int)(getZsize() - Zdirection - 1));
+            pointcount++;
+            if(pointcount == 2)
+            {
+                VoxelSplain();
+                pointcount = 0;
+            }
+        }*/
     }
-     if(event->key() == Qt::Key_2)
-     {
-        test1 = 1;
-        setExist(getXsize(),getYsize(),getZsize());
-        scene = Scene();
-     }
     program->bind();
     program->setUniformValue(u_worldToCamera, camera.toMatrix());
     program->release();

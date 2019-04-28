@@ -9,6 +9,9 @@ QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG   += c++15
+QMAKE_CXXFLAGS_RELEASE += -fopenmp
+QMAKE_LFLAGS_RELEASE += -fopenmp
+LIBS += -lgomp -lpthread
 TARGET = Voxel_Rubicks_Cube
 TEMPLATE = app
 
