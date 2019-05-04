@@ -1,5 +1,6 @@
 #include "drawer.h"
 #include <QMouseEvent>
+#include <fstream>
 
 
 
@@ -44,16 +45,16 @@ void Drawer::setDrawStatus(int x, int y, int z) //FRLBTH
         {
             if (z == 0)
                 matrix[x][y][z].setStatus("LBH");
-            else if (z == NodeSizeZ)
+            else if (z == NodeSizeZ-1)
                 matrix[x][y][z].setStatus("FLB");
             else // x == 0 && y == 0 && 0<z<NodeSizeZ
                 matrix[x][y][z].setStatus("LB");
         }
-        else if (y == NodeSizeY)
+        else if (y == NodeSizeY-1)
         {
             if (z == 0)
                 matrix[x][y][z].setStatus("LTH");
-            else if (z == NodeSizeZ)
+            else if (z == NodeSizeZ-1)
                 matrix[x][y][z].setStatus("FLT");
             else // x == 0 && y == NodeSizeY && 0<z<NodeSizeZ
                 matrix[x][y][z].setStatus("LT");
@@ -61,34 +62,34 @@ void Drawer::setDrawStatus(int x, int y, int z) //FRLBTH
         }
         else if(z == 0)
             matrix[x][y][z].setStatus("LH");
-        else if(z == NodeSizeZ)
+        else if(z == NodeSizeZ-1)
             matrix[x][y][z].setStatus("FL");
         else // x == 0 && 0<y<NodeSizeY && 0<z<NodeSizeZ
             matrix[x][y][z].setStatus("L");
     }
-    else if(x == NodeSizeX)
+    else if(x == NodeSizeX-1)
     {
         if(y == 0)
         {
             if (z == 0)
                 matrix[x][y][z].setStatus("RBH");
-            else if (z == NodeSizeZ)
+            else if (z == NodeSizeZ-1)
                 matrix[x][y][z].setStatus("FRB");
             else
                 matrix[x][y][z].setStatus("RB");
         }
-        else if (y == NodeSizeY)
+        else if (y == NodeSizeY-1)
         {
             if (z == 0)
                 matrix[x][y][z].setStatus("RTH");
-            else if (z == NodeSizeZ)
+            else if (z == NodeSizeZ-1)
                 matrix[x][y][z].setStatus("FRT");
             else
                 matrix[x][y][z].setStatus("RT");
         }
         else if(z == 0)
             matrix[x][y][z].setStatus("RH");
-        else if(z == NodeSizeZ)
+        else if(z == NodeSizeZ-1)
             matrix[x][y][z].setStatus("FR");
         else
             matrix[x][y][z].setStatus("R");
@@ -97,23 +98,23 @@ void Drawer::setDrawStatus(int x, int y, int z) //FRLBTH
     {
         if(z == 0)
             matrix[x][y][z].setStatus("BH");
-        else if(z == NodeSizeZ)
+        else if(z == NodeSizeZ-1)
             matrix[x][y][z].setStatus("FB");
         else
             matrix[x][y][z].setStatus("B");
     }
-    else if(y == NodeSizeY)
+    else if(y == NodeSizeY-1)
     {
         if(z == 0)
             matrix[x][y][z].setStatus("TH");
-        else if(z == NodeSizeZ)
+        else if(z == NodeSizeZ-1)
             matrix[x][y][z].setStatus("FT");
         else
             matrix[x][y][z].setStatus("T");
     }
     else if(z == 0) // 0<x<NodeSizeX && 0<y<NodeSizeY
         matrix[x][y][z].setStatus("H");
-    else if(z == NodeSizeZ)
+    else if(z == NodeSizeZ-1)
         matrix[x][y][z].setStatus("F");
 
 }
@@ -167,8 +168,8 @@ void Drawer:: setExist(int x, int y, int z)
                 {
 
                     if(((i == 0) || (i == (x -1)) || (j == 0) ||  (j == (y -1)) || (k == 0) ||  (k == (z -1))) && !matrix[i][j][k].isDel())
-                        matrix[i][j][k].setExists(true);
-                    //setDrawStatus(i,j,k);
+                        //matrix[i][j][k].setExists(true);
+                        setDrawStatus(i,j,k);
                     else
                         matrix[i][j][k].setExists(false);
                 }
@@ -185,7 +186,6 @@ void Drawer:: setExist(int x, int y, int z)
                         matrix[i][j][k].setExists(false);
                 }
     }
-
 }
 
 char Drawer::CheckDirection()
@@ -341,10 +341,10 @@ Drawer::Drawer(QWidget *parent) :
 {
     float LengthX, LengthY, LengthZ, Step;
     //Need to implement input from file
-    LengthX=3.0f;
-    LengthY=3.0f;
-    LengthZ=3.0f;
-    Step=1.0f;
+    LengthX=1.0f;
+    LengthY=1.0f;
+    LengthZ=1.0f;
+    Step=0.1f;
 
 
 
@@ -432,6 +432,7 @@ Drawer::Drawer(QWidget *parent) :
     oldSizeZ = NodeSizeZ;
 
     setCollor(NodeSizeX, NodeSizeY, NodeSizeZ);
+    //setDrawStatus(NodeSizeX, NodeSizeY, NodeSizeZ);
     setExist(NodeSizeX, NodeSizeY, NodeSizeZ);
 
     scene = Scene();
@@ -442,6 +443,7 @@ Drawer::Drawer(QWidget *parent) :
 
 void Drawer::initializeGL()
 {
+    QVector3D green = QVector3D(0.0f, 1.0f, 0.0f);
     initializeOpenGLFunctions();
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     connect(this, SIGNAL(frameSwapped()), this, SLOT(update()));
@@ -458,6 +460,7 @@ void Drawer::initializeGL()
     program->setUniformValue(u_modelToWorld, modelToWorld);
     program->setUniformValue(u_worldToCamera, camera.toMatrix());
     program->setUniformValue(u_cameraToView, cameraToView);
+    program->setUniformValue(u_color, green);
 
 
     vao.create();
@@ -469,7 +472,7 @@ void Drawer::initializeGL()
     bufferForVertices.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
     program->enableAttributeArray(0);
-    program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
+    program->setAttributeBuffer(0, GL_FLOAT, 0, 12, 0);
 
     bufferForNormals = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     bufferForNormals.create();
@@ -477,7 +480,7 @@ void Drawer::initializeGL()
     bufferForNormals.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
     program->enableAttributeArray(1);
-    program->setAttributeBuffer(1, GL_FLOAT, 0, 3, 0);
+    program->setAttributeBuffer(1, GL_FLOAT, 0, 12, 0);
 
     vao.release();
     bufferForVertices.release();
@@ -508,6 +511,9 @@ void Drawer::paintGL()
         QVector3D green = QVector3D(0.0f, 1.0f, 0.0f);
         QVector3D VoxelCenterPoint[3];
 
+        QVector <QVector3D> normals, vert;
+        QVector <int> indexes, indexes_size;
+        int size = 0;
         float length = getLength();
         for(int i = 0; i < getXsize(); i++)
             for(int j = 0; j < getYsize(); j++)
@@ -517,6 +523,10 @@ void Drawer::paintGL()
 
                     if(matrix[i][j][k].isExists() && !matrix[i][j][k].isDel())
                     {
+                        //                        data.i = i;
+                        //                        data.j = j;
+                        //                        data.k = k;
+                        size++;
                         QVector3D base[6];
 
                         base[0] = QVector3D(-1.0f, 0.0f, 0.0f);
@@ -537,177 +547,165 @@ void Drawer::paintGL()
                                     QVector3D z = mix(base[4], base[5], (float)(k + kk) / (float)getZsize());
                                     normal[ii + jj * 2 + kk * 4] = mix(x, y, z);
                                 }
-                        if(PolygonalGridFlag == 0)
+                        for(int a = 0; a < 8; a++)
+                            normals.push_back(normal[a]);
+
+                        //                        if(PolygonalGridFlag == 0)
+                        //                        {
+                        QVector3D vertices[8];
+
+                        vertices[0] = QVector3D(i * length, j * length, k * length);
+                        vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
+                        vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
+                        vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
+                        vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
+                        vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
+                        vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
+                        vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
+
+                        for(int a = 0; a < 8; a++)
+                            vert.push_back(vertices[a]);
+
+                        std::string status = matrix[i][j][k].getStatus();
+
+                        const unsigned int indicesSize = 4*status.length();
+                        int* indices = new int[indicesSize];
+                        int c = 0;
+                        for(unsigned int b = 0; b < status.length(); b++)
                         {
-                            QVector3D vertices[8];
-
-                            vertices[0] = QVector3D(i * length, j * length, k * length);
-                            vertices[1] = QVector3D((i + 1) * length, j * length, k * length);
-                            vertices[2] = QVector3D(i * length, (j + 1) * length, k * length);
-                            vertices[3] = QVector3D((i + 1) * length, (j + 1) * length, k * length);
-                            vertices[4] = QVector3D(i * length, j * length, (k + 1) * length);
-                            vertices[5] = QVector3D((i + 1) * length, j * length, (k + 1) * length);
-                            vertices[6] = QVector3D(i * length, (j + 1) * length, (k + 1) * length);
-                            vertices[7] = QVector3D((i + 1) * length, (j + 1) * length, (k + 1) * length);
-                            /*int indices[24] =
+                            char s = status[b];
+                            switch(s)
                             {
-                                0, 1, 5, 4, // front
-                                1, 3, 7, 5, // right
-                                0, 2, 6, 4, // left
-                                0, 1, 3, 2, // bottom
-                                4, 5, 7, 6, // top
-                                2, 3, 7, 6  // hind
-                            };*/
-                            std::string status = matrix[i][j][k].getStatus();
-                            const int indicesSize = 4*status.length();
-                            int* indices = new int[indicesSize];
-                            int c = 0;
-                            for(int b = 0; b < status.length(); b++)
-                            {
-                                char s = status[b];
-                                switch(s)
-                                {
-                                case 'F':{
-                                    indices[0 + 4 * c] = 0;
-                                    indices[1 + 4 * c] = 1;
-                                    indices[2 + 4 * c] = 5;
-                                    indices[3 + 4 * c] = 4;
-                                    c++;
-                                    break;
-                                }
-                                case 'R':{
-                                    indices[0 + 4 * c] = 1;
-                                    indices[1 + 4 * c] = 3;
-                                    indices[2 + 4 * c] = 7;
-                                    indices[3 + 4 * c] = 5;
-                                    c++;
-                                    break;
-                                }
-                                case 'L':{
-                                    indices[0 + 4 * c] = 0;
-                                    indices[1 + 4 * c] = 2;
-                                    indices[2 + 4 * c] = 6;
-                                    indices[3 + 4 * c] = 4;
-                                    c++;
-                                    break;
-                                }
-                                case 'B':{
-                                    indices[0 + 4 * c] = 0;
-                                    indices[1 + 4 * c] = 1;
-                                    indices[2 + 4 * c] = 3;
-                                    indices[3 + 4 * c] = 2;
-                                    c++;
-                                    break;
-                                }
-                                case 'T':{
-                                    indices[0 + 4 * c] = 4;
-                                    indices[1 + 4 * c] = 5;
-                                    indices[2 + 4 * c] = 7;
-                                    indices[3 + 4 * c] = 6;
-                                    c++;
-                                    break;
-                                }
-                                case 'H':{
-                                    indices[0 + 4 * c] = 2;
-                                    indices[1 + 4 * c] = 3;
-                                    indices[2 + 4 * c] = 7;
-                                    indices[3 + 4 * c] = 6;
-                                    c++;
-                                    break;
-                                }
-                                }
+                            case 'F':{
+                                indices[0 + 4 * c] = 4;
+                                indices[1 + 4 * c] = 5;
+                                indices[2 + 4 * c] = 7;
+                                indices[3 + 4 * c] = 6;
+                                c++;
+                                break;
                             }
-                            program->bind();
-                            program->setUniformValue(u_color, matrix[i][j][k].getColor());
-                            bufferForVertices.bind();
-                            bufferForVertices.allocate(vertices, sizeof(vertices));
-                            bufferForNormals.bind();
-                            bufferForNormals.allocate(normal, sizeof(normal));
-                            vao.bind();
-                            glDrawElements(GL_QUADS, indicesSize, GL_UNSIGNED_INT, indices); // почитать про примитивы
-                            vao.release();
-                            bufferForVertices.release();
-                            bufferForNormals.release();
-                            program->release();
-
-
-                            if(GridFlag == 2)
-                            {
-
-                                program->bind();
-                                program->setUniformValue(u_color, black);
-                                vao.bind();
-                                glLineWidth(2);
-                                glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
-                                vao.release();
-                                program->release();
+                            case 'R':{
+                                indices[0 + 4 * c] = 1;
+                                indices[1 + 4 * c] = 3;
+                                indices[2 + 4 * c] = 7;
+                                indices[3 + 4 * c] = 5;
+                                c++;
+                                break;
                             }
-
+                            case 'L':{
+                                indices[0 + 4 * c] = 0;
+                                indices[1 + 4 * c] = 2;
+                                indices[2 + 4 * c] = 6;
+                                indices[3 + 4 * c] = 4;
+                                c++;
+                                break;
+                            }
+                            case 'B':{
+                                indices[0 + 4 * c] = 0;
+                                indices[1 + 4 * c] = 1;
+                                indices[2 + 4 * c] = 5;
+                                indices[3 + 4 * c] = 4;
+                                c++;
+                                break;
+                            }
+                            case 'T':{
+                                indices[0 + 4 * c] = 2;
+                                indices[1 + 4 * c] = 3;
+                                indices[2 + 4 * c] = 7;
+                                indices[3 + 4 * c] = 6;
+                                c++;
+                                break;
+                            }
+                            case 'H':{
+                                indices[0 + 4 * c] = 0;
+                                indices[1 + 4 * c] = 1;
+                                indices[2 + 4 * c] = 3;
+                                indices[3 + 4 * c] = 2;
+                                c++;
+                                break;
+                            }
+                            }
                         }
-                        else
-                        {
-                            int count = 0;
-                            VoxelCenterPoint[count] = QVector3D((((i * length) + (i+1)*length)/2.0f), (((j * length) + (j+1)*length)/2.0f), (((k * length) + (k+1)*length)/2.0f));
-                            count++;
-                            for(int ii = -1; ii < 2; ii++)
-                                for(int jj = -1; jj < 2; jj++)
-                                    for(int kk = -1; kk < 2; kk++)
-                                    {
-                                        if(((i+ii) < 0) || ((j+jj) < 0) || ((k+kk) < 0))
-                                            continue;
-                                        if(((i+ii+1) > getXsize()) || ((j+jj+1) >getYsize()) || ((k+kk+1) >getZsize()))
-                                            continue;
-                                        if(matrix[i+ii][j+jj][k+kk].isExists() && !matrix[i+ii][j+jj][k+kk].isDel())
-                                        {
-                                            VoxelCenterPoint[count] = QVector3D(((((i+ii) * length) + ((i+ii+1)*length))/2.0f), ((((j+jj) * length) + ((j+jj+1)*length))/2.0f), ((((k+kk) * length) + ((k+kk+1)*length))/2.0f));
-                                            count++;
-                                        }
-                                        if(count == 3)
-                                        {
-                                            program->bind();
-                                            program->setUniformValue(u_color, green);
-                                            bufferForVertices.bind();
-                                            bufferForVertices.allocate(VoxelCenterPoint, sizeof(VoxelCenterPoint));
-                                            bufferForNormals.bind();
-                                            bufferForNormals.allocate(normal, sizeof(normal));
+                        for(int ii = 0; ii < indicesSize; ii++)
+                            indexes.push_back(indices[ii]);
+                        indexes_size.push_back(indicesSize);
+                        //                            if(GridFlag == 2)
+                        //                            {
 
-                                            vao.bind();
-                                            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, quadIndices);
-                                            vao.release();
-                                            bufferForVertices.release();
-                                            bufferForNormals.release();
-                                            program->release();
-                                            if(GridFlag == 2)
-                                            {
-                                                program->bind();
-                                                program->setUniformValue(u_color, black);
-                                                bufferForVertices.bind();
-                                                bufferForVertices.allocate(VoxelCenterPoint, sizeof(VoxelCenterPoint));
-                                                vao.bind();
-                                                glLineWidth(2);
-                                                glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, trianglelineIndices);
-                                                vao.release();
-                                                bufferForVertices.release();
-                                                program->release();
-                                            }
-                                            if(kk == 0)
-                                            {
-                                                VoxelCenterPoint[1] = VoxelCenterPoint[2];
-                                                count = 2;
-                                            }
-                                            else
-                                                count = 1;
+                        //                                program->bind();
+                        //                                program->setUniformValue(u_color, black);
+                        //                                vao.bind();
+                        //                                glLineWidth(2);
+                        //                                glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+                        //                                vao.release();
+                        //                                program->release();
+                        //                            }
 
-                                        }
-                                    }
+                        //                        }
+                        //                        else
+                        //                        {
+                        //                            int count = 0;
+                        //                            VoxelCenterPoint[count] = QVector3D((((i * length) + (i+1)*length)/2.0f), (((j * length) + (j+1)*length)/2.0f), (((k * length) + (k+1)*length)/2.0f));
+                        //                            count++;
+                        //                            for(int ii = -1; ii < 2; ii++)
+                        //                                for(int jj = -1; jj < 2; jj++)
+                        //                                    for(int kk = -1; kk < 2; kk++)
+                        //                                    {
+                        //                                        if(((i+ii) < 0) || ((j+jj) < 0) || ((k+kk) < 0))
+                        //                                            continue;
+                        //                                        if(((i+ii+1) > getXsize()) || ((j+jj+1) >getYsize()) || ((k+kk+1) >getZsize()))
+                        //                                            continue;
+                        //                                        if(matrix[i+ii][j+jj][k+kk].isExists() && !matrix[i+ii][j+jj][k+kk].isDel())
+                        //                                        {
+                        //                                            VoxelCenterPoint[count] = QVector3D(((((i+ii) * length) + ((i+ii+1)*length))/2.0f), ((((j+jj) * length) + ((j+jj+1)*length))/2.0f), ((((k+kk) * length) + ((k+kk+1)*length))/2.0f));
+                        //                                            count++;
+                        //                                        }
+                        //                                        if(count == 3)
+                        //                                        {
+                        //                                            program->bind();
+                        //                                            program->setUniformValue(u_color, green);
+                        //                                            bufferForVertices.bind();
+                        //                                            bufferForVertices.allocate(VoxelCenterPoint, sizeof(VoxelCenterPoint));
+                        //                                            bufferForNormals.bind();
+                        //                                            bufferForNormals.allocate(normal, sizeof(normal));
 
-                        }
+                        //                                            vao.bind();
+                        //                                            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, quadIndices);
+                        //                                            vao.release();
+                        //                                            bufferForVertices.release();
+                        //                                            bufferForNormals.release();
+                        //                                            program->release();
+                        //                                            if(GridFlag == 2)
+                        //                                            {
+                        //                                                program->bind();
+                        //                                                program->setUniformValue(u_color, black);
+                        //                                                bufferForVertices.bind();
+                        //                                                bufferForVertices.allocate(VoxelCenterPoint, sizeof(VoxelCenterPoint));
+                        //                                                vao.bind();
+                        //                                                glLineWidth(2);
+                        //                                                glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, trianglelineIndices);
+                        //                                                vao.release();
+                        //                                                bufferForVertices.release();
+                        //                                                program->release();
+                        //                                            }
+                        //                                            if(kk == 0)
+                        //                                            {
+                        //                                                VoxelCenterPoint[1] = VoxelCenterPoint[2];
+                        //                                                count = 2;
+                        //                                            }
+                        //                                            else
+                        //                                                count = 1;
+
+                        //                                        }
+                        //                                    }
+
+                        //                        }
+
+                        //                    }
 
                     }
 
-                }
-
-       /* if(MoleFlag == 2)
+                    /* if(MoleFlag == 2)
         {
             MoleMatrix.resize(getMoleXsize());
             for(int i = 0; i < getMoleXsize(); ++i)
@@ -759,33 +757,69 @@ void Drawer::paintGL()
                                             deleteVoxel(i,j,k);
                     }
         }*/
-        if(contourFlag)
-        {
-            QVector3D contourVertices[8];
-            float x,y,z;
-            x = oldSizeX;
-            y = oldSizeY;
-            z = oldSizeZ;
-            contourVertices[0] = QVector3D(0.0f,0.0f,0.0f);
-            contourVertices[1] = QVector3D(0.0f,0.0f,z*length);
-            contourVertices[2] = QVector3D(0.0f,y*length,0.0f);
-            contourVertices[3] = QVector3D(0.0f,y*length,z*length);
-            contourVertices[4] = QVector3D(x*length,0.0f,0.0f);
-            contourVertices[5] = QVector3D(x*length,0.0f,z*length);
-            contourVertices[6] = QVector3D(x*length,y*length,0.0f);
-            contourVertices[7] = QVector3D(x*length,y*length,z*length);
-            program->bind();
-            program->setUniformValue(u_color, black);
-            bufferForVertices.bind();
-            bufferForVertices.allocate(contourVertices, sizeof(contourVertices));
+                    if(contourFlag)
+                    {
+                        QVector3D contourVertices[8];
+                        float x,y,z;
+                        x = oldSizeX;
+                        y = oldSizeY;
+                        z = oldSizeZ;
+                        contourVertices[0] = QVector3D(0.0f,0.0f,0.0f);
+                        contourVertices[1] = QVector3D(0.0f,0.0f,z*length);
+                        contourVertices[2] = QVector3D(0.0f,y*length,0.0f);
+                        contourVertices[3] = QVector3D(0.0f,y*length,z*length);
+                        contourVertices[4] = QVector3D(x*length,0.0f,0.0f);
+                        contourVertices[5] = QVector3D(x*length,0.0f,z*length);
+                        contourVertices[6] = QVector3D(x*length,y*length,0.0f);
+                        contourVertices[7] = QVector3D(x*length,y*length,z*length);
+                        program->bind();
+                        program->setUniformValue(u_color, black);
+                        bufferForVertices.bind();
+                        bufferForVertices.allocate(contourVertices, sizeof(contourVertices));
 
-            vao.bind();
-            glLineWidth(2);
-            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
-            vao.release();
-            bufferForVertices.release();
-            program->release();
-        }
+                        vao.bind();
+                        glLineWidth(2);
+                        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, lineIndices);
+                        vao.release();
+                        bufferForVertices.release();
+                        program->release();
+                    }
+                }
+
+//        fstream tmp("C:\\Users\\Egor0\\Downloads\\Voxel_Rubicks_Cube-20181203T050944Z-001\\Voxel_Rubicks_Cube\\tmp.txt", fstream::app);
+//        tmp << sizeof(normals) << " " <<  << std::endl;
+        normals.resize(size);
+        vert.resize(size);
+        indexes.resize(size);
+        indexes_size.resize(size);
+//        tmp.close();
+//        bufferForVertices.bind();
+//        bufferForVertices.allocate(&vert, sizeof(float)*vert.size());
+//        bufferForNormals.bind();
+//        bufferForNormals.allocate(&normals, sizeof(float)*normals.size());
+//        bufferForVertices.release();
+//        bufferForNormals.release();
+//        for(int i = 0; i < getXsize(); i++)
+//            for(int j = 0; j < getYsize(); j++)
+        //                for(int k = 0; k < getZsize(); k++)
+        //                {
+
+        program->bind();
+        //program->setUniformValue(u_color, matrix[i][j][k].getColor());
+
+        bufferForVertices.bind();
+        bufferForVertices.allocate(&vert, sizeof(float)*vert.size());
+        bufferForNormals.bind();
+        bufferForNormals.allocate(&normals, sizeof(float)*normals.size());
+        //                    bufferForVertices.bind();
+        //                    bufferForNormals.bind();
+        vao.bind();
+        glDrawElements(GL_QUADS, 0, GL_UNSIGNED_INT, 0); // почитать про примитивы
+        vao.release();
+        //                    bufferForVertices.release();
+        //                    bufferForNormals.release();
+        program->release();
+        //                }
     }
 }
 
